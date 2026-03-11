@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    kotlin("plugin.serialization")
 }
 
 android {
@@ -64,4 +65,9 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose")
 
     implementation("com.github.bumptech.glide:compose:1.0.0-beta01")
+
+    val nav_version = "2.9.7"
+    implementation("androidx.navigation:navigation-compose:$nav_version")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.10.0")
 }

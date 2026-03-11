@@ -6,12 +6,15 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,24 +36,35 @@ import com.example.libri.ui.common.LoadingView
 @Composable
 fun SearchScreen(
     searchViewModel: SearchViewModel,
-    modifier: Modifier = Modifier
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     val searchUiState by searchViewModel.uiState.collectAsStateWithLifecycle()
 
-    Box(
-        contentAlignment = Alignment.TopCenter,
-        modifier = modifier
-            .fillMaxSize()
-    ) {
-        SimpleSearchBar(
-            query = query,
-            onQueryChange = {
-                query = it
-                searchViewModel.fetchSearchResults(it)
-            },
-            searchUiState = searchUiState
-        )
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text("Search")
+                }
+            )
+        }
+    ) { innerPadding ->
+        Box(
+            contentAlignment = Alignment.TopCenter,
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        ) {
+            SimpleSearchBar(
+                query = query,
+                onQueryChange = {
+                    query = it
+                    searchViewModel.fetchSearchResults(it)
+                },
+                searchUiState = searchUiState
+            )
+        }
     }
 }
 
