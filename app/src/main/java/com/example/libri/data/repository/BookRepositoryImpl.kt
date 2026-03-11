@@ -1,6 +1,8 @@
 package com.example.libri.data.repository
 
+import android.util.Log
 import com.example.libri.data.mapper.toDomain
+import com.example.libri.data.mapper.toDomainModel
 import com.example.libri.data.remote.OpenLibraryApi
 import com.example.libri.domain.models.Book
 import com.example.libri.domain.repository.BookRepository
@@ -19,5 +21,23 @@ class BookRepositoryImpl(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    override suspend fun getTrendingBooks(): Result<List<Book>> {
+        return try {
+            val response = api.getTrendingDaily()
+            if (response.isSuccessful) {
+                Result.success(response.body()?.works?.map { it.toDomainModel() } ?: emptyList())
+            } else {
+                Result.failure(Exception("API Error"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "getTrendingBooks: Exception", e)
+            Result.failure(e)
+        }
+    }
+
+    companion object {
+        private const val TAG = "BookRepositoryImpl"
     }
 }

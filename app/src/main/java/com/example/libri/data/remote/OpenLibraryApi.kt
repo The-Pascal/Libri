@@ -1,6 +1,7 @@
 package com.example.libri.data.remote
 
 import com.example.libri.data.remote.dto.BookResponse
+import com.example.libri.data.remote.dto.TrendingResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -12,4 +13,9 @@ interface OpenLibraryApi {
         @Query("q") query: String,
         @Query("limit") limit: Int = 20
     ): Response<BookResponse>
+
+    @GET("trending/daily.json")
+    suspend fun getTrendingDaily(
+        @Query("limit") limit: Int = 15
+    ): Response<TrendingResponse>
 }

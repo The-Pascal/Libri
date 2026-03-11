@@ -1,6 +1,7 @@
 package com.example.libri.ui.search
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -41,14 +42,7 @@ fun SearchScreen(
     val searchUiState by searchViewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text("Search")
-                }
-            )
-        }
+        modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         Box(
             contentAlignment = Alignment.TopCenter,
@@ -77,6 +71,13 @@ private fun SimpleSearchBar(
     expandedState: Boolean = false
 ) {
     var expanded by rememberSaveable { mutableStateOf(expandedState) }
+
+    // Padding issue - https://issuetracker.google.com/issues/352872248?hl=ar&pli=1
+    val animateHorizontalPadding by animateDpAsState(
+        targetValue = if (expanded) 0.dp else 16.dp,
+        label = "paddingAnim"
+    )
+
     SearchBar(
         inputField = {
             SearchBarDefaults.InputField(
@@ -99,6 +100,7 @@ private fun SimpleSearchBar(
             expanded = it
         },
         windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
+        modifier = Modifier.padding(horizontal = animateHorizontalPadding)
     ) {
         Box {
             when (searchUiState) {

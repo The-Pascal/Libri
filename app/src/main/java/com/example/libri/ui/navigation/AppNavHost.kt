@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.libri.data.repository.BookRepositoryImpl
 import com.example.libri.ui.home.HomeScreen
+import com.example.libri.ui.home.HomeViewModel
 import com.example.libri.ui.search.SearchScreen
 import com.example.libri.ui.search.SearchViewModel
 import com.example.libri.utils.BaseViewModelFactory
@@ -17,7 +18,11 @@ fun AppNavHost(repository: BookRepositoryImpl) {
 
     NavHost(navController = navController, startDestination = Routes.Home) {
         composable<Routes.Home> {
+            val viewModel: HomeViewModel = viewModel(
+                factory = BaseViewModelFactory { HomeViewModel(repository) }
+            )
             HomeScreen(
+                viewModel = viewModel,
                 navigateToSearchScreen = {
                     navController.navigate(Routes.Search)
                 },
