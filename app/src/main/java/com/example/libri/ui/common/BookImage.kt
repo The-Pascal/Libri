@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -21,6 +22,8 @@ import com.example.libri.R
 @OptIn(ExperimentalGlideComposeApi::class)
 fun BookImage(
     url: String?,
+    modifier: Modifier = Modifier,
+    showShadow: Boolean = true
 ) {
     val context = LocalContext.current
     val requestManager = remember(context) { Glide.with(context) }
@@ -32,10 +35,13 @@ fun BookImage(
         loading = placeholder(R.drawable.placeholder),
         failure = placeholder(R.drawable.placeholder),
         transition = CrossFade,
-        modifier = Modifier
-            .size(width = 80.dp, height = 100.dp)
-            .padding(end = 12.dp)
-            .shadow(elevation = 10.dp, shape = RoundedCornerShape(percent = 10))
+        modifier = modifier
+            .clip(shape = RoundedCornerShape(percent = 10))
+            .apply {
+                if (showShadow) {
+                    shadow(elevation = 10.dp)
+                }
+            }
     ) {
         it.thumbnail(
             requestManager

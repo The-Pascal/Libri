@@ -12,7 +12,7 @@ fun SectionHeader(
 ) {
     Text(
         text = text,
-        style = MaterialTheme.typography.titleMedium,
+        style = MaterialTheme.typography.titleLarge,
         modifier = modifier
     )
 }

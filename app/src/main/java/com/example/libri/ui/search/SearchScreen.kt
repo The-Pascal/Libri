@@ -15,7 +15,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.libri.R
 import com.example.libri.domain.models.Book
-import com.example.libri.ui.common.BookItem
+import com.example.libri.ui.common.LongBookItem
 import com.example.libri.ui.common.ErrorView
 import com.example.libri.ui.common.LoadingView
 
@@ -128,7 +127,7 @@ private fun BooksList(
             items = booksList,
             key = { it.id }
         ) {
-            BookItem(book = it)
+            LongBookItem(book = it)
         }
     }
 }

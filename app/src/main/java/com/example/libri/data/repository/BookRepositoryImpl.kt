@@ -37,6 +37,20 @@ class BookRepositoryImpl(
         }
     }
 
+    override suspend fun getBooksByGenre(genre: String): Result<List<Book>> {
+        return try {
+            val response = api.getBooksByGenre(genre)
+            if (response.isSuccessful) {
+                Result.success(response.body()?.works?.map { it.toDomain() } ?: emptyList())
+            } else {
+                Result.failure(Exception("API Error"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "getBooksByGenre: Exception", e)
+            Result.failure(e)
+        }
+    }
+
     companion object {
         private const val TAG = "BookRepositoryImpl"
     }
