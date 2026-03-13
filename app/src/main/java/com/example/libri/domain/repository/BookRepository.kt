@@ -8,4 +8,6 @@ interface BookRepository {
     suspend fun getTrendingBooks(): Result<List<Book>>
 
     suspend fun getBooksByGenre(genre: String): Result<List<Book>>
+
+    suspend fun getTrendingBooksByAuthor(authorOlid: String): Result<List<Book>>
 }

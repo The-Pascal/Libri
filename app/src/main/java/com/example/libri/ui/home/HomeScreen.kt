@@ -24,10 +24,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
+import com.example.libri.R
 import com.example.libri.domain.models.Book
+import com.example.libri.ui.common.AuthorAvatar
 import com.example.libri.ui.common.LoadingView
 import com.example.libri.ui.common.SectionHeader
 import com.example.libri.ui.common.ShortBookItem
+import com.example.libri.utils.BookAuthor
 import com.example.libri.utils.BookGenre
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,10 +51,11 @@ fun HomeScreen(
                 title = { Text("Libri") }
             )
         }
-    ) { innerPadding: PaddingValues ->
+    ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.padding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp)
         ) {
             item {
                 TrendingNowSection(trendingState)
@@ -63,12 +68,16 @@ fun HomeScreen(
                     onGenreSelected = { viewModel.onGenreSelected(it) }
                 )
             }
+
+            item {
+                PopularAuthorsSection()
+            }
         }
     }
 }
 
 @Composable
-fun TrendingNowSection(
+private fun TrendingNowSection(
     uiState: UiState,
 ) {
     Column {
@@ -121,6 +130,34 @@ private fun TrendingByGenreSection(
     }
 }
 
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+private fun PopularAuthorsSection(
+    modifier: Modifier = Modifier,
+    isPreview: Boolean = false
+) {
+    Column(modifier) {
+        SectionHeader(
+            text = "Popular Authors",
+            modifier = Modifier.padding(start = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyRow(
+            contentPadding = PaddingValues(start = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(items = BookAuthor.all) {
+                AuthorAvatar(
+                    model = if (isPreview) R.drawable.demo_book_cover else it.imageUrl,
+                    name = it.displayName
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun ShortItemsList(
     state: UiState,
@@ -141,6 +178,12 @@ private fun ShortItemsList(
             }
         }
     }
+}
+
+@Preview(showBackground = true, backgroundColor = Color.WHITE.toLong())
+@Composable
+private fun PopularAuthorsPreview() {
+    PopularAuthorsSection(isPreview = true)
 }
 
 @Preview(showBackground = true, backgroundColor = Color.WHITE.toLong())

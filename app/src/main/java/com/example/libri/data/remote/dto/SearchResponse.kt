@@ -2,7 +2,7 @@ package com.example.libri.data.remote.dto
 
 import com.google.gson.annotations.SerializedName
 
-data class BookResponse(
+data class SearchResponse(
     @SerializedName("docs")
     val docs: List<BookDto>
 )

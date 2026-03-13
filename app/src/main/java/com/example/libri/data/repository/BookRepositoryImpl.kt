@@ -51,6 +51,20 @@ class BookRepositoryImpl(
         }
     }
 
+    override suspend fun getTrendingBooksByAuthor(authorOlid: String): Result<List<Book>> {
+        return try {
+            val response = api.getTrendingBooksByAuthor(authorOlid)
+            if (response.isSuccessful) {
+                Result.success(response.body()?.docs?.map { it.toDomain() } ?: emptyList())
+            } else {
+                Result.failure(Exception("API Error"))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "getTrendingBooksByAuthor: Exception", e)
+            Result.failure(e)
+        }
+    }
+
     companion object {
         private const val TAG = "BookRepositoryImpl"
     }

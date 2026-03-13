@@ -1,6 +1,6 @@
 package com.example.libri.data.remote
 
-import com.example.libri.data.remote.dto.BookResponse
+import com.example.libri.data.remote.dto.SearchResponse
 import com.example.libri.data.remote.dto.SubjectResponse
 import com.example.libri.data.remote.dto.TrendingResponse
 import retrofit2.Response
@@ -14,7 +14,7 @@ interface OpenLibraryApi {
     suspend fun searchBooks(
         @Query("q") query: String,
         @Query("limit") limit: Int = 20
-    ): Response<BookResponse>
+    ): Response<SearchResponse>
 
     @GET("trending/daily.json")
     suspend fun getTrendingDaily(
@@ -27,4 +27,11 @@ interface OpenLibraryApi {
         @Query("limit") limit: Int = 15,
         @Query("details") details: Boolean = true
     ): Response<SubjectResponse>
+
+    @GET("search.json")
+    suspend fun getTrendingBooksByAuthor(
+        @Query("author") authorOlid: String,
+        @Query("sort") sort: String = "trending",
+        @Query("limit") limit: Int = 10
+    ): Response<SearchResponse>
 }
