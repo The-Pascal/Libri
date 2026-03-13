@@ -28,9 +28,9 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.example.libri.R
 import com.example.libri.domain.models.Book
 import com.example.libri.ui.common.AuthorAvatar
-import com.example.libri.ui.common.LoadingView
 import com.example.libri.ui.common.SectionHeader
 import com.example.libri.ui.common.ShortBookItem
+import com.example.libri.ui.common.ShortBookItemShimmer
 import com.example.libri.utils.BookAuthor
 import com.example.libri.utils.BookGenre
 
@@ -165,7 +165,16 @@ private fun ShortItemsList(
     when (state) {
         is UiState.Error -> Text("Error")
 
-        is UiState.Loading -> LoadingView()
+        is UiState.Loading -> {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+            ) {
+                items(5) {
+                    ShortBookItemShimmer()
+                }
+            }
+        }
 
         is UiState.Success -> {
             LazyRow(
