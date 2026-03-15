@@ -3,6 +3,7 @@ package com.example.libri.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.libri.domain.models.Book
+import com.example.libri.domain.models.UiState
 import com.example.libri.domain.repository.BookRepository
 import com.example.libri.utils.BookGenre
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -68,11 +69,4 @@ class HomeViewModel(
             .onSuccess { emit(UiState.Success(it)) }
             .onFailure { emit(UiState.Error("Something went wrong")) }
     }
-}
-
-
-sealed class UiState {
-    data object Loading: UiState()
-    data class Error(val message: String): UiState()
-    data class Success(val books: List<Book>): UiState()
 }

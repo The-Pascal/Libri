@@ -10,12 +10,13 @@ import com.example.libri.domain.repository.BookRepository
 class BookRepositoryImpl(
     private val api: OpenLibraryApi,
 ) : BookRepository {
-    override suspend fun searchBooks(query: String): Result<List<Book>> {
+    override suspend fun searchBooks(query: String, sort: String?): Result<List<Book>> {
         return try {
-            val response = api.searchBooks(query)
+            val response = api.searchBooks(query, sort)
             if (response.isSuccessful) {
                 Result.success(response.body()?.docs?.map { it.toDomain() } ?: emptyList())
             } else {
+                Log.d(TAG, "Error - ${response.errorBody()?.string()}")
                 Result.failure(Exception("API Error"))
             }
         } catch (e: Exception) {

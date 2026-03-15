@@ -3,6 +3,7 @@ package com.example.libri.ui.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.libri.domain.models.Book
+import com.example.libri.domain.models.UiState
 import com.example.libri.domain.repository.BookRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -14,6 +15,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class SearchViewModel(
     private val repository: BookRepository
@@ -21,8 +23,15 @@ class SearchViewModel(
 
     private val searchQuery = MutableStateFlow("")
 
+    private val _hotNewReleases = MutableStateFlow<UiState>(UiState.Loading)
+    val hotNewReleases: StateFlow<UiState> = _hotNewReleases
+
+    init {
+        fetchHotReleases()
+    }
+
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    val uiState: StateFlow<SearchUiState> = searchQuery
+    val uiState = searchQuery
         .debounce(500L)
         .distinctUntilChanged()
         .flatMapLatest { query ->
@@ -44,6 +53,16 @@ class SearchViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = SearchUiState.Idle
         )
+
+    private fun fetchHotReleases() {
+        viewModelScope.launch {
+            _hotNewReleases.value = UiState.Loading
+            repository.searchBooks(query = "publish_year:2026", sort = "new").fold(
+                onSuccess = { _hotNewReleases.value = UiState.Success(it) },
+                onFailure = { _hotNewReleases.value = UiState.Error(it.message ?: "Error") }
+            )
+        }
+    }
 
     fun fetchSearchResults(query: String) {
         searchQuery.value = query

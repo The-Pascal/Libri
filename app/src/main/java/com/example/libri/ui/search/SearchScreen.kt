@@ -1,14 +1,18 @@
 package com.example.libri.ui.search
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -20,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,9 +31,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.libri.R
 import com.example.libri.domain.models.Book
+import com.example.libri.domain.models.UiState
 import com.example.libri.ui.common.LongBookItem
 import com.example.libri.ui.common.ErrorView
 import com.example.libri.ui.common.LoadingView
+import com.example.libri.ui.common.SectionHeader
+import com.example.libri.ui.common.ShortBookItem
+import com.example.libri.ui.common.ShortBookItemShimmer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,12 +46,12 @@ fun SearchScreen(
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     val searchUiState by searchViewModel.uiState.collectAsStateWithLifecycle()
+    val hotNewReleases by searchViewModel.hotNewReleases.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
-        Box(
-            contentAlignment = Alignment.TopCenter,
+        Column (
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize()
@@ -55,8 +62,16 @@ fun SearchScreen(
                     query = it
                     searchViewModel.fetchSearchResults(it)
                 },
-                searchUiState = searchUiState
             )
+
+            Box {
+                when (val searchState = searchUiState) {
+                    is SearchUiState.Error -> ErrorView(searchState.message)
+                    is SearchUiState.Idle -> IdleState(hotNewReleases)
+                    is SearchUiState.Loading -> LoadingView()
+                    is SearchUiState.Success -> BooksList(searchState.books)
+                }
+            }
         }
     }
 }
@@ -66,16 +81,9 @@ fun SearchScreen(
 private fun SimpleSearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
-    searchUiState: SearchUiState,
     expandedState: Boolean = false
 ) {
     var expanded by rememberSaveable { mutableStateOf(expandedState) }
-
-    // Padding issue - https://issuetracker.google.com/issues/352872248?hl=ar&pli=1
-    val animateHorizontalPadding by animateDpAsState(
-        targetValue = if (expanded) 0.dp else 16.dp,
-        label = "paddingAnim"
-    )
 
     SearchBar(
         inputField = {
@@ -94,19 +102,53 @@ private fun SimpleSearchBar(
                 }
             )
         },
-        expanded = expanded,
+        expanded = false,
         onExpandedChange = {
             expanded = it
         },
         windowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
-        modifier = Modifier.padding(horizontal = animateHorizontalPadding)
-    ) {
-        Box {
-            when (searchUiState) {
-                is SearchUiState.Error -> ErrorView(searchUiState.message)
-                is SearchUiState.Idle -> Text("Idle state")
-                is SearchUiState.Loading -> LoadingView()
-                is SearchUiState.Success -> BooksList(searchUiState.books)
+        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
+    ) { }
+}
+
+@Composable
+private fun IdleState(hotNewReleases: UiState) {
+    Column {
+        SectionHeader(
+            text = "Latest Publications",
+            modifier = Modifier.padding(start = 16.dp, top = 24.dp)
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        ShortItemsList(hotNewReleases)
+    }
+}
+
+@Composable
+private fun ShortItemsList(
+    state: UiState,
+) {
+    when (state) {
+        is UiState.Error -> Text("Error")
+
+        is UiState.Loading -> {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+            ) {
+                items(5) {
+                    ShortBookItemShimmer()
+                }
+            }
+        }
+
+        is UiState.Success -> {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+            ) {
+                items(items = state.books) {
+                    ShortBookItem(book = it)
+                }
             }
         }
     }
@@ -151,7 +193,6 @@ private fun SearchScreenPreview() {
     SimpleSearchBar(
         query = "Harry",
         onQueryChange = { },
-        searchUiState = SearchUiState.Success(books = bookList),
         expandedState = true
     )
 }

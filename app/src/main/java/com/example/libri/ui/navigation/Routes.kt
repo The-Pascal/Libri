@@ -2,11 +2,11 @@ package com.example.libri.ui.navigation
 
 import kotlinx.serialization.Serializable
 
-object Routes {
+sealed class Routes {
 
     @Serializable
-    data object Search
+    data object Search: Routes()
 
     @Serializable
-    data object Home
+    data object Home: Routes()
 }
