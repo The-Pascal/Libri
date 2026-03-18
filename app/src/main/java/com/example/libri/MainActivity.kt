@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,6 +25,7 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.libri.data.local.AppDatabase
 import com.example.libri.data.remote.Network
 import com.example.libri.data.repository.BookRepositoryImpl
 import com.example.libri.domain.repository.BookRepository
@@ -38,7 +40,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val repository = BookRepositoryImpl(Network.openLibraryApi)
+        val database = AppDatabase.getInstance(this)
+        val repository = BookRepositoryImpl(Network.openLibraryApi, database)
 
         setContent {
             LibriTheme {
@@ -57,8 +60,8 @@ enum class NavigationDestination(
     val contentDesc: String
 ) {
     Home(Routes.Home, "Home", Icons.Default.Home, "Home"),
-    Search(Routes.Search, "Search", Icons.Default.Search, "Search")
-
+    Search(Routes.Search, "Search", Icons.Default.Search, "Search"),
+    Favorite(Routes.Favorite, "Favorite", Icons.Default.Favorite, "Favorite")
 }
 
 @Composable
@@ -75,7 +78,7 @@ fun AppNavigationBar(
         modifier,
         bottomBar = {
             NavigationBar(windowInsets = NavigationBarDefaults.windowInsets) {
-                NavigationDestination.entries.forEachIndexed { index, destination ->
+                NavigationDestination.entries.forEachIndexed { _, destination ->
                     val selected = currentDestination?.hasRoute(destination.route::class) == true
 
                     NavigationBarItem(

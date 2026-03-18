@@ -69,7 +69,10 @@ fun SearchScreen(
                     is SearchUiState.Error -> ErrorView(searchState.message)
                     is SearchUiState.Idle -> IdleState(hotNewReleases)
                     is SearchUiState.Loading -> LoadingView()
-                    is SearchUiState.Success -> BooksList(searchState.books)
+                    is SearchUiState.Success -> BooksList(
+                        booksList = searchState.books,
+                        onBookmarkClicked = { searchViewModel.insertToFavoriteDB(it) }
+                    )
                 }
             }
         }
@@ -157,6 +160,7 @@ private fun ShortItemsList(
 @Composable
 private fun BooksList(
     booksList: List<Book>,
+    onBookmarkClicked: (Book) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -168,8 +172,11 @@ private fun BooksList(
         items(
             items = booksList,
             key = { it.id }
-        ) {
-            LongBookItem(book = it)
+        ) { book ->
+            LongBookItem(
+                book = book,
+                onBookmarkClick = { onBookmarkClicked(book.copy(isBookmarked = !book.isBookmarked)) }
+            )
         }
     }
 }

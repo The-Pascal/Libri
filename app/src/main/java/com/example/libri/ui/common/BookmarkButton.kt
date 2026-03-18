@@ -8,6 +8,9 @@ import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.libri.R
 
 @Composable
 fun BookmarkButton(
@@ -21,10 +24,10 @@ fun BookmarkButton(
         modifier = modifier
     ) {
         Icon(
-            imageVector = if (isBookmarked) {
-                Icons.Filled.Favorite
+            painter = if (isBookmarked) {
+                painterResource(R.drawable.baseline_favorite_24)
             } else {
-                Icons.Outlined.Favorite
+                painterResource(R.drawable.outline_favorite_24)
             },
             contentDescription = if (isBookmarked) "Remove Bookmark" else "Add Bookmark",
             tint = if (isBookmarked) {
@@ -34,4 +37,13 @@ fun BookmarkButton(
             }
         )
     }
+}
+
+@Preview
+@Composable
+private fun BookmarkButtonPreview() {
+    BookmarkButton(
+        isBookmarked = true,
+        onBookmarkClick = {}
+    )
 }

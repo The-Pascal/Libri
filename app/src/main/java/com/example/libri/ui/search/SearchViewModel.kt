@@ -42,10 +42,15 @@ class SearchViewModel(
                 }
 
                 emit(SearchUiState.Loading)
-                repository.searchBooks(query).fold(
-                    onSuccess = { emit(SearchUiState.Success(it)) },
-                    onFailure = { emit(SearchUiState.Error(it.message ?: "Error")) }
-                )
+                repository.searchBooks(query).collect {
+                    it.onSuccess {
+                        emit(SearchUiState.Success(it))
+                    }
+                    it.onFailure {
+                        emit(SearchUiState.Error(it.message ?: "Error"))
+
+                    }
+                }
             }
         }
         .stateIn(
@@ -57,15 +62,21 @@ class SearchViewModel(
     private fun fetchHotReleases() {
         viewModelScope.launch {
             _hotNewReleases.value = UiState.Loading
-            repository.searchBooks(query = "publish_year:2026", sort = "new").fold(
-                onSuccess = { _hotNewReleases.value = UiState.Success(it) },
-                onFailure = { _hotNewReleases.value = UiState.Error(it.message ?: "Error") }
-            )
+            repository.searchBooks(query = "publish_year:2026", sort = "new").collect {
+                it.onSuccess { _hotNewReleases.value = UiState.Success(it) }
+                it.onFailure { _hotNewReleases.value = UiState.Error(it.message ?: "Error") }
+            }
         }
     }
 
     fun fetchSearchResults(query: String) {
         searchQuery.value = query
+    }
+
+    fun insertToFavoriteDB(book: Book) {
+        viewModelScope.launch {
+            repository.insertBook(book)
+        }
     }
 
     companion object {

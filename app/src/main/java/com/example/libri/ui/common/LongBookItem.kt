@@ -1,6 +1,6 @@
 package com.example.libri.ui.common
 
-import android.content.res.Configuration
+import android.graphics.Color
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,6 +22,7 @@ import com.example.libri.domain.models.Book
 @Composable
 fun LongBookItem(
     book: Book,
+    onBookmarkClick: (Book) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row (
@@ -61,12 +62,13 @@ fun LongBookItem(
             isBookmarked = book.isBookmarked,
             onBookmarkClick = {
                 Log.d(TAG, "onBookmarkClicked - ${book.title}")
+                onBookmarkClick(book)
             },
         )
     }
 }
 
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(showBackground = true, backgroundColor = Color.WHITE.toLong())
 @Composable
 private fun LongBookItemPreview() {
     val book = Book(
@@ -75,9 +77,9 @@ private fun LongBookItemPreview() {
         authors = listOf("J.K. Rowling"),
         coverUrl = "https://www.image.com",
         publishYear = "1997",
-        isBookmarked = true
+        isBookmarked = false
     )
-    LongBookItem(book)
+    LongBookItem(book, {})
 }
 
 private const val TAG = "BookItem"

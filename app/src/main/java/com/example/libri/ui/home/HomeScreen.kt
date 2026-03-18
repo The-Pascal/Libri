@@ -58,11 +58,11 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp)
         ) {
-            item {
+            item(key = "trending_now") {
                 TrendingNowSection(trendingState)
             }
 
-            item {
+            item(key = "trending_by_genre") {
                 TrendingByGenreSection(
                     state = booksByGenre,
                     selectedGenre = selectedGenre,
@@ -70,7 +70,7 @@ fun HomeScreen(
                 )
             }
 
-            item {
+            item(key = "popular_authors") {
                 PopularAuthorsSection()
             }
         }
