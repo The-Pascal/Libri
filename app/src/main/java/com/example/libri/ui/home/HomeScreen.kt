@@ -1,6 +1,7 @@
 package com.example.libri.ui.home
 
 import android.graphics.Color
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -32,24 +33,49 @@ import com.example.libri.ui.common.AuthorAvatar
 import com.example.libri.ui.common.SectionHeader
 import com.example.libri.ui.common.ShortBookItem
 import com.example.libri.ui.common.ShortBookItemShimmer
+import com.example.libri.ui.theme.LibriTheme
 import com.example.libri.utils.BookAuthor
 import com.example.libri.utils.BookGenre
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    navigateToSearchScreen: () -> Unit,
     viewModel: HomeViewModel,
+    navigateToSearchScreen: () -> Unit,
+    navigateToBookDetails: (Book) -> Unit,
 ) {
     val trendingState by viewModel.trendingBooks.collectAsStateWithLifecycle()
     val booksByGenre by viewModel.booksByGenre.collectAsStateWithLifecycle()
     val selectedGenre by viewModel.selectedGenre.collectAsStateWithLifecycle()
 
+    MainContent(
+        trendingState = trendingState,
+        navigateToBookDetails = navigateToBookDetails,
+        booksByGenre = booksByGenre,
+        selectedGenre = selectedGenre,
+        onGenreSelected = { viewModel.onGenreSelected(it) }
+    )
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun MainContent(
+    trendingState: UiState,
+    navigateToBookDetails: (Book) -> Unit,
+    booksByGenre: UiState,
+    selectedGenre: BookGenre,
+    onGenreSelected: (BookGenre) -> Unit
+) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = { Text("Libri") }
+                title = {
+                    Text(
+                        text = "Libri",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                }
             )
         }
     ) { innerPadding ->
@@ -59,14 +85,15 @@ fun HomeScreen(
             contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp)
         ) {
             item(key = "trending_now") {
-                TrendingNowSection(trendingState)
+                TrendingNowSection(trendingState, navigateToBookDetails)
             }
 
             item(key = "trending_by_genre") {
                 TrendingByGenreSection(
                     state = booksByGenre,
                     selectedGenre = selectedGenre,
-                    onGenreSelected = { viewModel.onGenreSelected(it) }
+                    onGenreSelected = onGenreSelected,
+                    navigateToBookDetails = navigateToBookDetails
                 )
             }
 
@@ -80,6 +107,7 @@ fun HomeScreen(
 @Composable
 private fun TrendingNowSection(
     uiState: UiState,
+    navigateToBookDetails: (Book) -> Unit,
 ) {
     Column {
         SectionHeader(
@@ -87,7 +115,7 @@ private fun TrendingNowSection(
             modifier = Modifier.padding(start = 16.dp)
         )
         Spacer(modifier = Modifier.height(8.dp))
-        ShortItemsList(uiState)
+        ShortItemsList(uiState, navigateToBookDetails)
     }
 }
 
@@ -95,7 +123,8 @@ private fun TrendingNowSection(
 private fun TrendingByGenreSection(
     state: UiState,
     selectedGenre: BookGenre,
-    onGenreSelected: (BookGenre) -> Unit
+    onGenreSelected: (BookGenre) -> Unit,
+    navigateToBookDetails: (Book) -> Unit
 ) {
     Column {
         SectionHeader(
@@ -127,7 +156,7 @@ private fun TrendingByGenreSection(
 
         Spacer(Modifier.height(8.dp))
 
-        ShortItemsList(state)
+        ShortItemsList(state, navigateToBookDetails)
     }
 }
 
@@ -162,6 +191,7 @@ private fun PopularAuthorsSection(
 @Composable
 private fun ShortItemsList(
     state: UiState,
+    navigateToBookDetails: (Book) -> Unit,
 ) {
     when (state) {
         is UiState.Error -> Text("Error")
@@ -183,22 +213,21 @@ private fun ShortItemsList(
                 contentPadding = PaddingValues(horizontal = 16.dp),
             ) {
                 items(items = state.books) {
-                    ShortBookItem(book = it)
+                    ShortBookItem(
+                        book = it,
+                        modifier = Modifier.clickable(enabled = true) {
+                            navigateToBookDetails(it)
+                        }
+                    )
                 }
             }
         }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = Color.WHITE.toLong())
+@Preview
 @Composable
-private fun PopularAuthorsPreview() {
-    PopularAuthorsSection(isPreview = true)
-}
-
-@Preview(showBackground = true, backgroundColor = Color.WHITE.toLong())
-@Composable
-private fun TestPreview() {
+private fun MainContentPreview() {
     val book = Book(
         id = "abc123",
         title = "Harry Potter Gauntlet",
@@ -207,27 +236,59 @@ private fun TestPreview() {
         publishYear = "1997",
         isBookmarked = true
     )
+    val uiState = UiState.Success(listOf(book, book, book))
 
-    TrendingByGenreSection(
-        state = UiState.Success(listOf(book, book, book)),
-        selectedGenre = BookGenre.FANTASY,
-        onGenreSelected = {}
-    )
+    LibriTheme {
+        MainContent(
+            trendingState = uiState,
+            navigateToBookDetails = {},
+            booksByGenre = uiState,
+            selectedGenre = BookGenre.FANTASY,
+            onGenreSelected = {}
+        )
+    }
 }
 
-@Preview(showBackground = true, backgroundColor = Color.WHITE.toLong())
-@Composable
-private fun TrendingNowSectionPreview() {
-    val book = Book(
-        id = "abc123",
-        title = "Harry Potter Gauntlet",
-        authors = listOf("J.K. Rowling"),
-        coverUrl = "https://www.image.com",
-        publishYear = "1997",
-        isBookmarked = true
-    )
-
-    TrendingNowSection(
-        uiState = UiState.Success(listOf(book, book, book)),
-    )
-}
+//@Preview(showBackground = true, backgroundColor = Color.WHITE.toLong())
+//@Composable
+//private fun PopularAuthorsPreview() {
+//    PopularAuthorsSection(isPreview = true)
+//}
+//
+//@Preview(showBackground = true, backgroundColor = Color.WHITE.toLong())
+//@Composable
+//private fun TestPreview() {
+//    val book = Book(
+//        id = "abc123",
+//        title = "Harry Potter Gauntlet",
+//        authors = listOf("J.K. Rowling"),
+//        coverUrl = "https://www.image.com",
+//        publishYear = "1997",
+//        isBookmarked = true
+//    )
+//
+//    TrendingByGenreSection(
+//        state = UiState.Success(listOf(book, book, book)),
+//        selectedGenre = BookGenre.FANTASY,
+//        onGenreSelected = {},
+//        navigateToBookDetails = {}
+//    )
+//}
+//
+//@Preview(showBackground = true, backgroundColor = Color.WHITE.toLong())
+//@Composable
+//private fun TrendingNowSectionPreview() {
+//    val book = Book(
+//        id = "abc123",
+//        title = "Harry Potter Gauntlet",
+//        authors = listOf("J.K. Rowling"),
+//        coverUrl = "https://www.image.com",
+//        publishYear = "1997",
+//        isBookmarked = true
+//    )
+//
+//    TrendingNowSection(
+//        uiState = UiState.Success(listOf(book, book, book)),
+//        navigateToBookDetails = { },
+//    )
+//}

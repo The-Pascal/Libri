@@ -1,5 +1,6 @@
 package com.example.libri.ui.favorite
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.libri.domain.models.Book
@@ -13,9 +14,9 @@ import kotlinx.coroutines.launch
 
 class FavoriteViewModel(private val repository: BookRepository): ViewModel() {
 
-    fun getFavoriteBooks() = repository
-        .getFavoriteBooks()
+    val favoriteBooksUiState = repository.getFavoriteBooks()
         .map {
+            Log.d("TestTag", "getFavoriteBooks viewmodel")
             UiState.Success(it)
         }
         .catch {

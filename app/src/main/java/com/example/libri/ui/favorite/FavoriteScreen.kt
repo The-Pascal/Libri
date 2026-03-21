@@ -1,10 +1,19 @@
 package com.example.libri.ui.favorite
 
 import android.graphics.Color
+import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -13,7 +22,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,8 +32,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.libri.domain.models.Book
 import com.example.libri.domain.models.UiState
 import com.example.libri.ui.common.DismissBackground
+import com.example.libri.ui.common.FavoriteBookItem
+import com.example.libri.ui.common.LibriTopAppBar
 import com.example.libri.ui.common.LoadingView
 import com.example.libri.ui.common.LongBookItem
+import com.example.libri.ui.theme.LibriTheme
+import com.example.libri.ui.theme.LightCharcoal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,78 +45,71 @@ fun FavoriteScreen(
     viewModel: FavoriteViewModel,
     modifier: Modifier = Modifier
 ) {
-    val favoriteBooks by viewModel.getFavoriteBooks().collectAsStateWithLifecycle()
+    val favoriteBooks by viewModel.favoriteBooksUiState.collectAsStateWithLifecycle()
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(title = { Text("Your Favorites") })
-        }
-    ) { innerPadding ->
-        MainContent(
-            uiState = favoriteBooks,
-            onRemoveItem = { viewModel.removeBookFromFavorites(it) },
-            modifier = Modifier.padding(innerPadding)
+    MainContent(
+        modifier = modifier,
+        favoriteBooks = favoriteBooks,
+        removeBookFromFavorites = { viewModel.removeBookFromFavorites(it) }
+    )
+}
+
+@Composable
+private fun FavoriteHeader() {
+    Column {
+        Text(
+            text = "Favorites",
+            style = MaterialTheme.typography.displayLarge,
+        )
+
+        Text(
+            text = "Your curated collection of literary gems.",
+            style = MaterialTheme.typography.headlineSmall,
+            color = LightCharcoal,
         )
     }
 }
 
 @Composable
-fun MainContent(
-    uiState: UiState,
-    onRemoveItem: (Book) -> Unit,
+private fun MainContent(
+    favoriteBooks: UiState,
+    removeBookFromFavorites: (Book) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier) {
-        when(uiState) {
-            is UiState.Error -> {
-                Text("Error")
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        topBar = { LibriTopAppBar() },
+        containerColor = MaterialTheme.colorScheme.surface
+    ) { innerPadding ->
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(2),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(32.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+        ) {
+            item(span = { GridItemSpan(maxLineSpan) }) {
+                FavoriteHeader()
             }
-            is UiState.Loading -> {
-                LoadingView()
-            }
-            is UiState.Success -> {
-                LazyColumn {
-                    items(items = uiState.books, key = { it.id }) {
-                        SwipeableBookItem(
-                            book = it,
-                            onRemove = onRemoveItem
-                        )
+
+            when(favoriteBooks) {
+                is UiState.Error -> TODO()
+                is UiState.Loading -> {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        LoadingView()
+                    }
+                }
+                is UiState.Success -> {
+                    items(
+                        items = favoriteBooks.books,
+                        key = { it.id }
+                    ) {
+                        FavoriteBookItem(book = it)
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun SwipeableBookItem(
-    book: Book,
-    onRemove: (Book) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = {
-            if (it == SwipeToDismissBoxValue.EndToStart) {
-                onRemove(book)
-                true
-            } else {
-                true
-            }
-        }
-    )
-
-    SwipeToDismissBox(
-        state = dismissState,
-        backgroundContent = { DismissBackground(dismissState) },
-        enableDismissFromStartToEnd = false,
-        modifier = modifier.padding(bottom = 2.dp)
-    ) {
-        Surface(
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 2.dp,
-        ) {
-            LongBookItem(book, onBookmarkClick = {})
         }
     }
 }
@@ -124,5 +129,10 @@ private fun MainContentPreview() {
         book,
         book.copy(id = "123")
     )
-    MainContent(uiState = UiState.Success(bookList), {})
+    LibriTheme {
+        MainContent(
+            favoriteBooks = UiState.Success(bookList),
+            removeBookFromFavorites = {}
+        )
+    }
 }

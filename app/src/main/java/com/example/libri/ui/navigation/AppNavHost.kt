@@ -6,7 +6,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.example.libri.domain.repository.BookRepository
+import com.example.libri.ui.details.BookDetailScreen
+import com.example.libri.ui.details.BookDetailViewModel
 import com.example.libri.ui.favorite.FavoriteScreen
 import com.example.libri.ui.favorite.FavoriteViewModel
 import com.example.libri.ui.home.HomeScreen
@@ -36,6 +39,9 @@ fun AppNavHost(
                 navigateToSearchScreen = {
                     navController.navigate(Routes.Search)
                 },
+                navigateToBookDetails = {
+                    navController.navigate(Routes.BookDetail(it))
+                }
             )
         }
 
@@ -55,5 +61,15 @@ fun AppNavHost(
             )
             FavoriteScreen(viewModel = viewModel)
         }
+
+//        composable<Routes.BookDetail> { backStackEntry ->
+//            val route = backStackEntry.toRoute<Routes.BookDetail>()
+//            val book = route.book
+//
+//            val viewModel: BookDetailViewModel = viewModel(
+//                factory = BaseViewModelFactory { BookDetailViewModel(book = book) }
+//            )
+//            BookDetailScreen(viewModel = viewModel)
+//        }
     }
 }

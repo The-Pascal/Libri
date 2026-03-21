@@ -1,5 +1,8 @@
 package com.example.libri.domain.models
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Book(
     val id: String,
     val title: String,

@@ -1,5 +1,6 @@
 package com.example.libri.ui.navigation
 
+import com.example.libri.domain.models.Book
 import kotlinx.serialization.Serializable
 
 sealed class Routes {
@@ -12,4 +13,12 @@ sealed class Routes {
 
     @Serializable
     data object Favorite: Routes()
+
+    @Serializable
+    data object Profile: Routes()
+
+    @Serializable
+    data class BookDetail(
+        val book: Book
+    ): Routes()
 }
