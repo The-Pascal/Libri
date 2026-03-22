@@ -45,10 +45,15 @@ val EditorialTypography = Typography(
         fontWeight = FontWeight(600),
         fontSize = 36.sp,
     ),
-    headlineMedium = TextStyle(
+    headlineLarge = TextStyle(
         fontFamily = NotoSerifFamily,
         fontWeight = FontWeight(600),
         fontSize = 28.sp
+    ),
+    headlineMedium = TextStyle(
+        fontFamily = NotoSerifFamily,
+        fontWeight = FontWeight(600),
+        fontSize = 24.sp
     ),
     headlineSmall = TextStyle(
         fontFamily = NotoSerifFamily,

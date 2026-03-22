@@ -58,7 +58,7 @@ fun RemoveFavoriteDialog(
             ) {
                 Text(
                     text = "Remove from\nFavorites?",
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineLarge,
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(12.dp))
@@ -74,7 +74,7 @@ fun RemoveFavoriteDialog(
                             color = MaterialTheme.colorScheme.primary
                         )
                     ) {
-                        append("'${book.title}'")
+                        append("'${book.title}' ")
                     }
 
                     append(" from your collection?")

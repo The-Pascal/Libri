@@ -15,6 +15,7 @@ val DeepTerracotta = Color(0xFF9A442D)          // Secondary/CTA
 val TerracottaContainer = Color(0xFFFC9174)     // CTA Gradient End
 val TerracottaFixed = Color(0xFFFFDBD2)         // Text highlight
 val SageGreenContainer = Color(0xFF70A18A)      // Tertiary/Success
+val DarkGreenContainer = Color(0xFF325544)
 
 // Typography & Outlines
 val DeepCharcoal = Color(0xFF1B1C1A)            // Primary Text (Never pure black)

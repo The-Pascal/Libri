@@ -1,38 +1,69 @@
 package com.example.libri.ui.home
 
-import android.graphics.Color
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.BlurredEdgeTreatment
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.example.libri.R
 import com.example.libri.domain.models.Book
 import com.example.libri.domain.models.UiState
 import com.example.libri.ui.common.AuthorAvatar
+import com.example.libri.ui.common.BookImage
+import com.example.libri.ui.common.LibriTopAppBar
 import com.example.libri.ui.common.SectionHeader
 import com.example.libri.ui.common.ShortBookItem
 import com.example.libri.ui.common.ShortBookItemShimmer
+import com.example.libri.ui.theme.DarkGreenContainer
 import com.example.libri.ui.theme.LibriTheme
 import com.example.libri.utils.BookAuthor
 import com.example.libri.utils.BookGenre
@@ -68,22 +99,26 @@ private fun MainContent(
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Libri",
-                        style = MaterialTheme.typography.headlineMedium
-                    )
-                }
-            )
-        }
+        topBar = { LibriTopAppBar() },
+        containerColor = MaterialTheme.colorScheme.surface
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.padding(innerPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(top = 16.dp, bottom = 16.dp)
         ) {
+            item(key = "editor_choice") {
+                EditorChoiceSection(
+                    book = Book(
+                        id = "123",
+                        title = "The Alchemist's Journal",
+                        authors = listOf(""),
+                        coverUrl = "https://covers.openlibrary.org/b/id/15121528-L.jpg",
+                        publishYear = "1997",
+                        isBookmarked = true
+                    )
+                )
+            }
             item(key = "trending_now") {
                 TrendingNowSection(trendingState, navigateToBookDetails)
             }
@@ -105,6 +140,167 @@ private fun MainContent(
 }
 
 @Composable
+fun EditorChoiceSection(
+    book: Book,
+    modifier: Modifier = Modifier
+) {
+    val density = LocalDensity.current
+    var imageWidthPx by remember { mutableIntStateOf(0) }
+
+    val imageWidthDp = remember(imageWidthPx) {
+        with(density) {
+            imageWidthPx.toDp()
+        }
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(440.dp)
+            .padding(16.dp)
+            .clip(MaterialTheme.shapes.large)
+            .background(DarkGreenContainer),
+        contentAlignment = Alignment.Center
+    ) {
+        ShadowedBookImage(
+            modifier = Modifier.offset(y = (-10).dp),
+            url = book.coverUrl
+        ) {
+            imageWidthPx = it.width
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(12.dp)
+                .clip(MaterialTheme.shapes.large)
+        ) {
+            Box(
+                modifier = Modifier.matchParentSize(),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                if (imageWidthDp > 0.dp) {
+                    BookImage(
+                        url = book.coverUrl,
+                        modifier = Modifier
+                            .width(imageWidthDp)
+                            .aspectRatio(2f / 3f)
+                            .offset(y = (-80).dp)
+                            .align(Alignment.BottomCenter)
+                            .blur(50.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+                            .alpha(0.9f),
+                    )
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f))
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.surfaceContainerLowest.copy(alpha = 0.2f), //: Ghost Border
+                        shape = MaterialTheme.shapes.large
+                    )
+            )
+
+            Column(
+                modifier = Modifier.padding(24.dp)
+            ) {
+                Text(
+                    text = "EDITOR'S CHOICE",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.surfaceContainerLowest.copy(alpha = 0.7f),
+                    fontSize = 12.sp,
+                    letterSpacing = TextUnit(1f, TextUnitType.Sp)
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = book.title,
+                    style = MaterialTheme.typography.displayLarge,
+                    color = MaterialTheme.colorScheme.surfaceContainerLowest
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier
+                        .height(IntrinsicSize.Min),
+                ) {
+                    Button(
+                        onClick = {},
+                        contentPadding = PaddingValues(horizontal = 28.dp),
+                        modifier = Modifier.fillMaxHeight()
+                    ) {
+                        Text(
+                            text = "Start Reading",
+                            style = MaterialTheme.typography.headlineSmall,
+                        )
+                    }
+
+                    Surface(
+                        onClick = {},
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                        contentColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+                        border = BorderStroke(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.surfaceContainerLowest.copy(alpha = 0.2f), //: Ghost Border
+                        ),
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(1f)
+                    ) {
+                        Icon(
+                            painter = if(!book.isBookmarked) {
+                                painterResource(R.drawable.favorite_outline_icon)
+                            } else {
+                                painterResource(R.drawable.baseline_favorite_24)
+                            },
+                            contentDescription = "favorite icon",
+                            modifier = Modifier.padding(8.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+@Composable
+private fun ShadowedBookImage(
+    modifier: Modifier = Modifier,
+    url: String? = null,
+    onSizeChanged: (IntSize) -> Unit
+) {
+    Box(modifier) {
+        Box(
+            modifier = Modifier
+                .padding(vertical = 48.dp)
+                .aspectRatio(2f / 3f)
+                .offset(x = 10.dp, y = 10.dp) // Intentional Asymmetry
+                .blur(12.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+        ) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(MaterialTheme.colorScheme.primary)
+            )
+        }
+
+        BookImage(
+            url = url,
+            modifier = Modifier
+                .padding(vertical = 48.dp)
+                .aspectRatio(2f / 3f)
+                .onSizeChanged { onSizeChanged(it) }
+        )
+    }
+}
+
+@Composable
 private fun TrendingNowSection(
     uiState: UiState,
     navigateToBookDetails: (Book) -> Unit,
@@ -114,7 +310,7 @@ private fun TrendingNowSection(
             text = "Trending Now",
             modifier = Modifier.padding(start = 16.dp)
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(24.dp))
         ShortItemsList(uiState, navigateToBookDetails)
     }
 }
@@ -225,7 +421,7 @@ private fun ShortItemsList(
     }
 }
 
-@Preview
+@Preview(showSystemUi = true)
 @Composable
 private fun MainContentPreview() {
     val book = Book(
