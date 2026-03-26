@@ -53,7 +53,7 @@ val EditorialTypography = Typography(
     headlineMedium = TextStyle(
         fontFamily = NotoSerifFamily,
         fontWeight = FontWeight(600),
-        fontSize = 24.sp
+        fontSize = 22.sp
     ),
     headlineSmall = TextStyle(
         fontFamily = NotoSerifFamily,
@@ -66,6 +66,12 @@ val EditorialTypography = Typography(
         fontFamily = NotoSerifFamily,
         fontWeight = FontWeight(500),
         fontSize = 18.sp,
+        color = DeepCharcoal
+    ),
+    titleSmall = TextStyle(
+        fontFamily = NotoSerifFamily,
+        fontWeight = FontWeight(600),
+        fontSize = 16.sp,
         color = DeepCharcoal
     ),
     bodyMedium = TextStyle(
@@ -81,8 +87,9 @@ val EditorialTypography = Typography(
         color = LightCharcoal
     ),
     labelSmall = TextStyle(
-        fontFamily = PlusJakartaSansFamily,
-        fontWeight = FontWeight(400), // SemiBold
-        fontSize = 10.sp
+        fontFamily = NotoSerifFamily,
+        fontWeight = FontWeight(500),
+        fontSize = 12.sp,
+        color = DeepTerracotta
     ),
 )

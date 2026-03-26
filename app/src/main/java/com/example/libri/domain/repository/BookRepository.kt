@@ -1,10 +1,11 @@
 package com.example.libri.domain.repository
 
 import com.example.libri.domain.models.Book
+import com.example.libri.utils.BestSellerList
 import kotlinx.coroutines.flow.Flow
 
 interface BookRepository {
-    suspend fun getTrendingBooks(): Result<List<Book>>
+    suspend fun getTrendingBooks(): Result<Map<BestSellerList, List<Book>>>
 
     suspend fun getBooksByGenre(genre: String): Result<List<Book>>
 
@@ -15,4 +16,6 @@ interface BookRepository {
     fun getFavoriteBooks(): Flow<List<Book>>
 
     suspend fun insertBook(book: Book)
+
+    suspend fun getFreeTreasures(): Result<List<Book>>
 }

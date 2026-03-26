@@ -14,9 +14,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.libri.domain.models.Book
+import com.example.libri.ui.theme.LibriTheme
+import com.example.libri.utils.toSentenceCase
+import java.util.Locale
 
 @Composable
 fun ShortBookItem(
@@ -25,11 +29,11 @@ fun ShortBookItem(
 ) {
     Column(
         modifier = modifier
-            .width(120.dp)
+            .width(150.dp)
             .padding(bottom = 8.dp)
     ) {
         BookImage(
-            book.coverUrl,
+            url = book.imageLinks?.medium,
             showShadow = false,
             modifier = Modifier
                 .fillMaxWidth()
@@ -39,7 +43,7 @@ fun ShortBookItem(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = book.title,
+            text = book.title.toSentenceCase(),
             style = MaterialTheme.typography.titleSmall,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
@@ -47,9 +51,10 @@ fun ShortBookItem(
         )
         Text(
             text = book.authors.joinToString(),
-            style = MaterialTheme.typography.bodySmall,
-            maxLines = 1,
+            style = MaterialTheme.typography.labelMedium,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 4.dp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
@@ -66,5 +71,7 @@ private fun ShortBookItemPreview() {
         publishYear = "1997",
         isBookmarked = true
     )
-    ShortBookItem(book)
+    LibriTheme {
+        ShortBookItem(book)
+    }
 }

@@ -7,6 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.example.libri.domain.models.Book
 import com.example.libri.domain.repository.BookRepository
 import com.example.libri.ui.details.BookDetailScreen
 import com.example.libri.ui.details.BookDetailViewModel
@@ -17,6 +18,7 @@ import com.example.libri.ui.home.HomeViewModel
 import com.example.libri.ui.search.SearchScreen
 import com.example.libri.ui.search.SearchViewModel
 import com.example.libri.utils.BaseViewModelFactory
+import kotlin.reflect.typeOf
 
 @Composable
 fun AppNavHost(
@@ -40,7 +42,7 @@ fun AppNavHost(
                     navController.navigate(Routes.Search)
                 },
                 navigateToBookDetails = {
-                    navController.navigate(Routes.BookDetail(it))
+                    navController.navigate(Routes.BookDetail(it.id))
                 }
             )
         }
@@ -62,14 +64,14 @@ fun AppNavHost(
             FavoriteScreen(viewModel = viewModel)
         }
 
-//        composable<Routes.BookDetail> { backStackEntry ->
-//            val route = backStackEntry.toRoute<Routes.BookDetail>()
-//            val book = route.book
-//
-//            val viewModel: BookDetailViewModel = viewModel(
-//                factory = BaseViewModelFactory { BookDetailViewModel(book = book) }
-//            )
-//            BookDetailScreen(viewModel = viewModel)
-//        }
+        composable<Routes.BookDetail> { backStackEntry ->
+            val route = backStackEntry.toRoute<Routes.BookDetail>()
+            val bookId = route.bookId
+
+            val viewModel: BookDetailViewModel = viewModel(
+                factory = BaseViewModelFactory { BookDetailViewModel(bookId = bookId) }
+            )
+            BookDetailScreen(viewModel = viewModel)
+        }
     }
 }

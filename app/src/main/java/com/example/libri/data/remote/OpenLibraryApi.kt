@@ -1,8 +1,11 @@
 package com.example.libri.data.remote
 
+import com.example.libri.data.remote.dto.AuthorDto
+import com.example.libri.data.remote.dto.EditionDto
 import com.example.libri.data.remote.dto.SearchResponse
 import com.example.libri.data.remote.dto.SubjectResponse
 import com.example.libri.data.remote.dto.TrendingResponse
+import com.example.libri.data.remote.dto.WorkDto
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -35,4 +38,19 @@ interface OpenLibraryApi {
         @Query("sort") sort: String = "trending",
         @Query("limit") limit: Int = 10
     ): Response<SearchResponse>
+
+    @GET("works/{workId}.json")
+    suspend fun getBookDetails(
+        @Path("workId") workId: String
+    ): Response<WorkDto>
+
+    @GET("authors/{authorId}.json")
+    suspend fun getAuthorDetails(
+        @Path("authorId") authorId: String
+    ): Response<AuthorDto>
+
+    @GET("works/{workId}/editions.json")
+    suspend fun getWorkEditions(
+        @Path("workId") workId: String
+    ): Response<EditionDto>
 }

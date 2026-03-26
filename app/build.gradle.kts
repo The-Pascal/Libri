@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     kotlin("plugin.serialization")
     id("com.google.devtools.ksp")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -38,6 +39,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

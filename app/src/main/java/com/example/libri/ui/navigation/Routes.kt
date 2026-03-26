@@ -19,6 +19,6 @@ sealed class Routes {
 
     @Serializable
     data class BookDetail(
-        val book: Book
+        val bookId: String
     ): Routes()
 }

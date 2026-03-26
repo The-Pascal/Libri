@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.libri.domain.models.Book
+import com.example.libri.utils.ApiType
 
 @Entity
 data class BookEntity(
@@ -18,7 +19,9 @@ data class BookEntity(
     @ColumnInfo(name = "publish_year")
     val publishYear: String,
     @ColumnInfo(name = "is_bookmarked")
-    val isBookmarked: Boolean = false
+    val isBookmarked: Boolean = false,
+    @ColumnInfo(name = "api_type")
+    val apiType: String
 )
 
 fun BookEntity.toDomain() = Book(
@@ -27,7 +30,10 @@ fun BookEntity.toDomain() = Book(
     authors = authors,
     coverUrl = coverUrl,
     publishYear = publishYear,
-    isBookmarked = isBookmarked
+    isBookmarked = isBookmarked,
+    averageRating = null,
+    ratingsCount = null,
+    apiType = ApiType.valueOf(apiType)
 )
 
 fun List<BookEntity>.toDomain() = map { it.toDomain() }
@@ -38,5 +44,6 @@ fun Book.toEntity() = BookEntity(
     authors = authors,
     coverUrl = coverUrl,
     publishYear = publishYear,
-    isBookmarked = isBookmarked
+    isBookmarked = isBookmarked,
+    apiType = apiType.name
 )

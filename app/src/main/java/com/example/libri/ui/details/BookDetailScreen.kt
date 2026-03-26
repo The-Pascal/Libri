@@ -41,8 +41,8 @@ fun BookDetailScreen(
     viewModel: BookDetailViewModel,
     modifier: Modifier = Modifier
 ) {
-    val book = remember { viewModel.book }
-    MainContentScaffold(book = book)
+//    val book = remember { viewModel.book }
+//    MainContentScaffold(book = book)
 }
 
 @Composable
@@ -172,12 +172,12 @@ private fun TopBookContent(book: Book) {
 @Preview
 @Composable
 private fun BookDetailPreview() {
-    MainContentScaffold(Book(
-        id = "abc123",
-        title = "The Great Gatsby",
-        authors = listOf("F. Scott Fitzgerald"),
-        publishYear = "1925",
-        coverUrl = "",
-        isBookmarked = false
-    ))
+//    MainContentScaffold(Book(
+//        id = "abc123",
+//        title = "The Great Gatsby",
+//        authors = listOf("F. Scott Fitzgerald"),
+//        publishYear = "1925",
+//        coverUrl = "",
+//        isBookmarked = false
+//    ))
 }

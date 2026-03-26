@@ -15,7 +15,7 @@ private val EditorialColorScheme = lightColorScheme(
     surface = SurfaceBase,
     onSurface = DeepCharcoal,
     surfaceVariant = SurfaceVariantBlur,
-    onSurfaceVariant = DeepCharcoal,
+    onSurfaceVariant = LightCharcoal.copy(alpha = 0.5f),
 
     // Tonal Layering Mapping
     surfaceContainerLowest = SurfaceContainerLowest,
@@ -23,7 +23,9 @@ private val EditorialColorScheme = lightColorScheme(
     surfaceContainer = SurfaceContainer,
     surfaceContainerHighest = SurfaceContainerHighest,
 
-    outlineVariant = GhostOutline // Ghost border suggestion
+    outlineVariant = GhostOutline, // Ghost border suggestion
+
+    inverseSurface = DarkBlue
 )
 
 @Composable

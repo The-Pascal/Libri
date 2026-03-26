@@ -21,3 +21,7 @@ val DarkGreenContainer = Color(0xFF325544)
 val DeepCharcoal = Color(0xFF1B1C1A)            // Primary Text (Never pure black)
 val LightCharcoal = Color(0xFF444748)
 val GhostOutline = Color(0xFFDBC1BA).copy(alpha = 0.15f) // Suggested border
+
+val YellowColor = Color(0xFFD4AF37)
+
+val DarkBlue = Color(0xFF0A1128)

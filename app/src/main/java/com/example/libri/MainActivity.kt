@@ -48,7 +48,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val database = AppDatabase.getInstance(this)
-        val repository = BookRepositoryImpl(Network.openLibraryApi, database)
+        val repository = BookRepositoryImpl(
+            Network.googleBooksApi, Network.nytBooksApi, Network.gutendexApi, database
+        )
 
         setContent {
             LibriTheme {
@@ -91,7 +93,7 @@ fun AppNavigationBar(
         AppNavHost(
             repository = repository,
             navController = navController,
-            startDestination = NavigationDestination.Favorite.route,
+            startDestination = NavigationDestination.Discover.route,
             modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
         )
     }
@@ -149,9 +151,9 @@ private fun RowScope.NavigationBarItem(
         colors = NavigationBarItemDefaults.colors(
             indicatorColor = MaterialTheme.colorScheme.secondary,
             selectedIconColor = MaterialTheme.colorScheme.surfaceContainerLowest,
-            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
             selectedTextColor = MaterialTheme.colorScheme.primary,
-            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            unselectedTextColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
         )
     )
 }
