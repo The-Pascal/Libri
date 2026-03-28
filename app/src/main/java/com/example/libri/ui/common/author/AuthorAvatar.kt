@@ -1,4 +1,4 @@
-package com.example.libri.ui.common
+package com.example.libri.ui.common.author
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
@@ -24,12 +24,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
+import coil3.compose.AsyncImage
 import com.example.libri.R
 import com.example.libri.ui.theme.LibriTheme
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun AuthorAvatar(
     model: Any?, // Can be URL String or Int resource
@@ -55,7 +53,7 @@ fun AuthorAvatar(
                         .clip(CircleShape)
                 )
             } else {
-                GlideImage(
+                AsyncImage(
                     model = model,
                     contentDescription = name,
                     contentScale = ContentScale.Crop,
@@ -87,7 +85,7 @@ private fun AuthorAvatarPreview() {
         Surface {
             AuthorAvatar(
                 model = R.drawable.demo_book_cover,
-                name = "JRR Rowling test"
+                name = "JRR Rowling"
             )
         }
     }

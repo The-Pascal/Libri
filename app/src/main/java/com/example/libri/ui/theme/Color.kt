@@ -12,7 +12,8 @@ val SurfaceVariantBlur = Color(0xFFE4E2DE)      // Glassmorphic header
 
 // Editorial Accents
 val DeepTerracotta = Color(0xFF9A442D)          // Secondary/CTA
-val TerracottaContainer = Color(0xFFFC9174)     // CTA Gradient End
+val TerracottaContainerSecondary = Color(0xFFE07A5F)
+val TerracottaContainerTertiary = Color(0xFFFC9174)     // CTA Gradient End
 val TerracottaFixed = Color(0xFFFFDBD2)         // Text highlight
 val SageGreenContainer = Color(0xFF70A18A)      // Tertiary/Success
 val DarkGreenContainer = Color(0xFF325544)

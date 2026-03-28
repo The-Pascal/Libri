@@ -9,7 +9,7 @@ private val EditorialColorScheme = lightColorScheme(
     onPrimary = SurfaceContainerLowest,
     secondary = DeepTerracotta,
     onSecondary = SurfaceContainerLowest,
-    secondaryContainer = TerracottaContainer,
+    secondaryContainer = TerracottaContainerSecondary,
     tertiaryContainer = SageGreenContainer,
 
     surface = SurfaceBase,

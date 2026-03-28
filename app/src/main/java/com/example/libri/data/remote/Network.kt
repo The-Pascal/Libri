@@ -59,18 +59,19 @@ object Network {
     }
 
     class AuthInterceptor(private val apiKey: String, private val apiKeyValue: String): Interceptor {
-        override fun intercept(chain: Interceptor.Chain?): Response? {
-            val originalRequest = chain?.request()
+        override fun intercept(chain: Interceptor.Chain): Response {
+            val originalRequest = chain.request()
+            originalRequest.url
 
-            val urlWithKey = originalRequest?.url()?.newBuilder()
-                ?.addQueryParameter(apiKey, apiKeyValue)
-                ?.build()
+            val urlWithKey = originalRequest.url.newBuilder()
+                .addQueryParameter(apiKey, apiKeyValue)
+                .build()
 
-            val newRequest = originalRequest?.newBuilder()
-                ?.url(urlWithKey)
-                ?.build()
+            val newRequest = originalRequest.newBuilder()
+                .url(urlWithKey)
+                .build()
 
-            return chain?.proceed(newRequest)
+            return chain.proceed(newRequest)
         }
     }
 }

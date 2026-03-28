@@ -58,11 +58,10 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.example.libri.R
 import com.example.libri.domain.models.Book
 import com.example.libri.domain.models.UiState
-import com.example.libri.ui.common.AuthorAvatar
+import com.example.libri.ui.common.author.AuthorAvatar
 import com.example.libri.ui.common.BookImage
 import com.example.libri.ui.common.DarkShortBookItem
 import com.example.libri.ui.common.LibriTopAppBar
@@ -153,6 +152,25 @@ private fun MainContent(
             item(key = "bottom_quote") {
                 BottomQuote()
             }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun EditorChoicePreview() {
+    LibriTheme {
+        Surface() {
+            EditorChoiceSection(
+                book = Book(
+                    id = "123",
+                    title = "The Alchemist's Journal",
+                    authors = listOf(""),
+                    coverUrl = "https://covers.openlibrary.org/b/id/15121528-L.jpg",
+                    publishYear = "1997",
+                    isBookmarked = true
+                )
+            )
         }
     }
 }
@@ -445,7 +463,6 @@ private fun TrendingByGenreSection(
     }
 }
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 private fun PopularAuthorsSection(
     modifier: Modifier = Modifier,
