@@ -4,6 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
@@ -84,10 +87,20 @@ fun AppNavigationBar(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
+    val shouldShowBottomBar = NavigationDestination.entries.any {
+        currentDestination?.hasRoute(it.route::class) == true
+    }
+
     Scaffold(
         modifier,
         bottomBar = {
-            NavigationBar(currentDestination, navController)
+            AnimatedVisibility(
+               visible = shouldShowBottomBar,
+                enter = slideInVertically(initialOffsetY = { it }),
+                exit = slideOutVertically(targetOffsetY = { it })
+            ) {
+                NavigationBar(currentDestination, navController)
+            }
         }
     ) { innerPadding ->
         AppNavHost(
@@ -112,7 +125,7 @@ private fun NavigationBar(
         containerColor = MaterialTheme.colorScheme.surfaceContainer,
         windowInsets = NavigationBarDefaults.windowInsets
     ) {
-        NavigationDestination.entries.forEachIndexed { _, destination ->
+        NavigationDestination.entries.forEachIndexed { _: Int, destination: NavigationDestination ->
             val selected = currentDestination?.hasRoute(destination.route::class) == true
             NavigationBarItem(selected, navController, destination)
         }

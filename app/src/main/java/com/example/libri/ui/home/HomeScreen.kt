@@ -81,6 +81,7 @@ fun HomeScreen(
     viewModel: HomeViewModel,
     navigateToSearchScreen: () -> Unit,
     navigateToBookDetails: (Book) -> Unit,
+    modifier: Modifier,
 ) {
     val freeTreasureBooks by viewModel.freeTreasureBooks.collectAsStateWithLifecycle()
     val booksByGenre by viewModel.booksByGenre.collectAsStateWithLifecycle()
@@ -93,7 +94,8 @@ fun HomeScreen(
         navigateToBookDetails = navigateToBookDetails,
         booksByGenre = booksByGenre,
         selectedGenre = selectedGenre,
-        onGenreSelected = { viewModel.onGenreSelected(it) }
+        onGenreSelected = { viewModel.onGenreSelected(it) },
+        modifier = modifier
     )
 }
 
@@ -104,10 +106,11 @@ private fun MainContent(
     navigateToBookDetails: (Book) -> Unit,
     booksByGenre: UiState,
     selectedGenre: CategoryGroup,
-    onGenreSelected: (CategoryGroup) -> Unit
+    onGenreSelected: (CategoryGroup) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         topBar = { LibriTopAppBar() },
         containerColor = MaterialTheme.colorScheme.surface
     ) { innerPadding ->

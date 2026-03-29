@@ -19,6 +19,10 @@ sealed class Routes {
 
     @Serializable
     data class BookDetail(
-        val bookId: String
+        val bookId: String,
+        val apiType: String,
+        val bookName: String,
+        val bookImageUrl: String,
+        val authors: String
     ): Routes()
 }

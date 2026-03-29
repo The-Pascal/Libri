@@ -20,12 +20,12 @@ import coil3.compose.AsyncImage
 import com.example.libri.R
 
 @Composable
-//@OptIn(ExperimentalGlideComposeApi::class)
 fun BookImage(
     url: String?,
     modifier: Modifier = Modifier,
     showShadow: Boolean = true,
-    alignment: Alignment = Alignment.Center
+    alignment: Alignment = Alignment.Center,
+    shapePercent: Int = 10
 ) {
     val isPreview = LocalInspectionMode.current
 
@@ -34,7 +34,7 @@ fun BookImage(
             painter = painterResource(R.drawable.demo_book_cover),
             contentDescription = "Book cover",
             modifier = modifier
-                .clip(shape = RoundedCornerShape(percent = 10))
+                .clip(shape = RoundedCornerShape(percent = shapePercent))
                 .apply {
                     if (showShadow) {
                         shadow(elevation = 10.dp)
@@ -50,7 +50,7 @@ fun BookImage(
             contentScale = ContentScale.Crop,
             alignment = alignment,
             modifier = modifier
-                .clip(shape = RoundedCornerShape(percent = 10))
+                .clip(shape = RoundedCornerShape(percent = shapePercent))
                 .apply {
                     if (showShadow) {
                         shadow(elevation = 10.dp)

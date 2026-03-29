@@ -16,14 +16,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,17 +54,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.libri.R
 import com.example.libri.domain.models.Book
 import com.example.libri.domain.models.BookImageLinks
-import com.example.libri.ui.common.author.AuthorAvatar
 import com.example.libri.ui.common.BookImage
 import com.example.libri.ui.common.author.SelectableAuthorAvatar
 import com.example.libri.ui.theme.LibriTheme
 import com.example.libri.ui.theme.LightCharcoal
+import com.example.libri.utils.ApiType
 import com.example.libri.utils.drawTextFade
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,26 +74,39 @@ fun BookDetailScreen(
     modifier: Modifier = Modifier
 ) {
 //    val book = remember { viewModel.book }
-    MainContentScaffold(book = Book(
-        id = "abc123",
-        title = "The Great Gatsby",
-        authors = listOf("F. Scott Fitzgerald"),
-        publishYear = "1925",
-        coverUrl = "",
-        isBookmarked = false,
-        tags = listOf("Philosophy", "Architecture", "Mindfulness"),
-        imageLinks = BookImageLinks(
-            small = "https://www.google.com",
-            medium = "https://www.google.com",
-            large = "https://covers.openlibrary.org/b/id/15121528-L.jpg"
+    val basicBookDetails by viewModel.bookArgs.collectAsStateWithLifecycle()
+
+    MainContentScaffold(
+        modifier = Modifier,
+        basicBookDetails = basicBookDetails,
+        book = Book(
+            id = "abc123",
+            title = "The Great Gatsby",
+            authors = listOf("F. Scott Fitzgerald"),
+            publishYear = "1925",
+            coverUrl = "",
+            isBookmarked = false,
+            tags = listOf("Philosophy", "Architecture", "Mindfulness"),
+            imageLinks = BookImageLinks(
+                small = "https://www.google.com",
+                medium = "https://www.google.com",
+                large = "https://covers.openlibrary.org/b/id/15121528-L.jpg"
+            )
         )
-    ))
+    )
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun MainContentScaffold(book: Book) {
+private fun MainContentScaffold(
+    book: Book,
+    modifier: Modifier = Modifier,
+    basicBookDetails: BookDetailViewModel.Args
+) {
+    val isStartedReading = false
     Scaffold(
+        modifier = modifier
+            .fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {},
@@ -113,34 +124,76 @@ private fun MainContentScaffold(book: Book) {
         },
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .background(MaterialTheme.colorScheme.secondaryContainer, shape = RoundedCornerShape(percent = 50))
-                    .padding(vertical = 18.dp)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.activity_outline_icon),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    modifier = Modifier.size(20.dp)
-                )
-                Text(
-                    text = "Update Progress".uppercase(),
-                    color = MaterialTheme.colorScheme.surfaceContainerLowest,
-                    style = MaterialTheme.typography.labelMedium,
-                    fontSize = 14.sp,
-                    letterSpacing = 1.2.sp
-                )
-            }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(start = 16.dp, end = 16.dp)
+                        .shadow(25.dp)
+                ) {
+                    ActionButtonBottomCenter(
+                        isStartedReading = isStartedReading,
+                        onClick = {},
+                    )
+                }
         }
     ) { innerPadding ->
         MainContent(
             book = book,
+            basicBookDetails = basicBookDetails,
             modifier = Modifier.padding(innerPadding)
+        )
+    }
+}
+
+@Composable
+private fun ActionButtonBottomCenter(
+    isStartedReading: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val background = if (isStartedReading) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        MaterialTheme.colorScheme.primary
+    }
+
+    val icon = if (isStartedReading) {
+        R.drawable.filled_edit_icon
+    } else {
+        R.drawable.outline_book_ribbon_24
+    }
+
+    val text = if (isStartedReading) {
+        "Update Progress"
+    } else {
+        "Start Reading"
+    }
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                background,
+                shape = RoundedCornerShape(percent = 50)
+            )
+            .padding(vertical = 18.dp)
+            .clickable { onClick() }
+    ) {
+        Icon(
+            painter = painterResource(icon),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.surfaceContainerLowest,
+            modifier = Modifier.size(20.dp)
+        )
+        Text(
+            text = text.uppercase(),
+            color = MaterialTheme.colorScheme.surfaceContainerLowest,
+            style = MaterialTheme.typography.labelMedium,
+            fontSize = 14.sp,
+            letterSpacing = 1.2.sp
         )
     }
 }
@@ -148,47 +201,47 @@ private fun MainContentScaffold(book: Book) {
 @Composable
 fun MainContent(
     book: Book,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    basicBookDetails: BookDetailViewModel.Args
 ) {
-    Box(
-        contentAlignment = Alignment.BottomCenter,
-        modifier = Modifier.fillMaxSize()
+    LazyColumn(
+        contentPadding = PaddingValues(bottom = 120.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
     ) {
-        LazyColumn(
-            contentPadding = PaddingValues(bottom = 24.dp),
-            modifier = modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-        ) {
-            item {
-                TopBookContent(book = book)
-            }
+        item {
+            TopBookContent(
+                imageLink = basicBookDetails.bookImageUrl,
+                title = basicBookDetails.bookName,
+                authors = basicBookDetails.authors,
+            )
+        }
 
-            book.tags?.let {
-                item {
-                    TagSection(
-                        it, Modifier
-                            .offset(y = (-2).dp)
-                            .background(MaterialTheme.colorScheme.surface)
-                            .fillMaxWidth()
-                    )
-                }
-            }
-
+        book.tags?.let {
             item {
-                Spacer(Modifier.height(28.dp))
-                BookStatsSection()
+                TagSection(
+                    it, Modifier
+                        .offset(y = (-2).dp)
+                        .background(MaterialTheme.colorScheme.surface)
+                        .fillMaxWidth()
+                )
             }
+        }
 
-            item {
-                Spacer(Modifier.height(28.dp))
-                AboutBookSection()
-            }
+        item {
+            Spacer(Modifier.height(28.dp))
+            BookStatsSection()
+        }
 
-            item {
-                Spacer(Modifier.height(28.dp))
-                AuthorProfileSection()
-            }
+        item {
+            Spacer(Modifier.height(28.dp))
+            AboutBookSection()
+        }
+
+        item {
+            Spacer(Modifier.height(28.dp))
+            AuthorProfileSection()
         }
     }
 }
@@ -200,6 +253,7 @@ fun AuthorProfileSection() {
         val imageUrl: String,
         val description: String
     )
+
     val authors = listOf(
         Author(
             name = "Elena Vance",
@@ -332,7 +386,7 @@ fun BookStatsSection(modifier: Modifier = Modifier) {
                     StatsTag(data = it, modifier = Modifier.weight(1f))
                 }
 
-                if(rowItems.size == 1) {
+                if (rowItems.size == 1) {
                     Spacer(modifier = Modifier.weight(1f))
                 }
             }
@@ -372,7 +426,7 @@ private fun AboutBookSection() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface) // Must be opaque
+            .background(MaterialTheme.colorScheme.surface)
             .padding(horizontal = 16.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -453,20 +507,26 @@ fun TagSection(tags: List<String>, modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun TopBookContent(book: Book) {
+private fun TopBookContent(
+    imageLink: String?,
+    title: String,
+    authors: String,
+    modifier: Modifier = Modifier
+) {
     val surfaceColor = MaterialTheme.colorScheme.surface
 
     Box(
         contentAlignment = Alignment.BottomCenter,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(420.dp)
     ) {
         BookImage(
-            url = book.imageLinks?.large,
+            url = imageLink,
+            shapePercent = 0,
             modifier = Modifier
                 .fillMaxSize()
-                .blur(20.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
+                .blur(10.dp, edgeTreatment = BlurredEdgeTreatment.Unbounded)
                 .alpha(1f)
         )
 
@@ -478,7 +538,8 @@ private fun TopBookContent(book: Book) {
                         colors = listOf(
                             surfaceColor.copy(alpha = 0.2f),
                             surfaceColor.copy(alpha = 0.6f),
-                            surfaceColor.copy(alpha = 0.8f),
+                            surfaceColor.copy(alpha = 0.6f),
+                            surfaceColor.copy(alpha = 0.9f),
                             surfaceColor
                         )
                     )
@@ -500,7 +561,7 @@ private fun TopBookContent(book: Book) {
                     .padding(start = 12.dp)
             ) {
                 BookImage(
-                    url = book.imageLinks?.large,
+                    url = imageLink,
                     alignment = Alignment.BottomCenter,
                     showShadow = true,
                     modifier = Modifier
@@ -508,11 +569,12 @@ private fun TopBookContent(book: Book) {
                         .aspectRatio(2f / 3f)
                 )
                 Text(
-                    text = book.title,
-                    style = MaterialTheme.typography.headlineLarge
+                    text = title,
+                    style = MaterialTheme.typography.headlineLarge,
+                    textAlign = TextAlign.Center
                 )
                 Text(
-                    text = book.authors.joinToString(),
+                    text = authors,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.secondary,
                     fontWeight = FontWeight(600)
@@ -522,7 +584,7 @@ private fun TopBookContent(book: Book) {
     }
 }
 
-@Preview
+@Preview(heightDp = 1400)
 @Composable
 private fun BookDetailPreview() {
     LibriTheme {
@@ -535,6 +597,13 @@ private fun BookDetailPreview() {
                 coverUrl = "",
                 isBookmarked = false,
                 tags = listOf("Philosophy", "Architecture", "Mindfulness")
+            ),
+            basicBookDetails = BookDetailViewModel.Args(
+                bookId = "abc123",
+    	        apiType = ApiType.UNKNOWN,
+                bookName = "The Great Gatsby",
+                authors = "F. Scott Fitzgerald",
+                bookImageUrl = ""
             )
         )
     }

@@ -43,6 +43,7 @@ import com.example.libri.ui.common.ShortBookItemShimmer
 @Composable
 fun SearchScreen(
     searchViewModel: SearchViewModel,
+    modifier: Modifier,
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     val searchUiState by searchViewModel.uiState.collectAsStateWithLifecycle()
