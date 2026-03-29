@@ -59,7 +59,8 @@ fun RemoveFavoriteDialog(
                 Text(
                     text = "Remove from\nFavorites?",
                     style = MaterialTheme.typography.headlineLarge,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 

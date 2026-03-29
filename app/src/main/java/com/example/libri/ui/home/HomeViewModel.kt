@@ -77,8 +77,10 @@ class HomeViewModel(
                 }
         }
 
-        _trendingBooks?.get(group)?.let {
-            emit(UiState.Success(it))
+        _trendingBooks?.get(group)?.let { books ->
+            emit(UiState.Success(
+                books.sortedBy { it.rank }.distinctBy { it.id }
+            ))
         } ?: run {
             emit(UiState.Error("Something went wrong"))
         }
