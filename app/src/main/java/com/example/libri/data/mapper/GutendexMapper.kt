@@ -13,7 +13,7 @@ fun GutendexBookDto.toDomain(): Book {
     val coverUrl = formats.coverImageUrl()
     return Book(
         apiType = ApiType.GUTENDEX,
-        id = "gutenberg-$id",
+        id = id.toString(),
         title = title,
         authors = authors.orEmpty().map { it.name },
         coverUrl = coverUrl,

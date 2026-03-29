@@ -22,6 +22,7 @@ data class NytList(
 
 data class NytBook(
     @SerializedName("primary_isbn13") val isbn13: String,
+    @SerializedName("primary_isbn10") val isbn10: String,
     @SerializedName("title") val title: String,
     @SerializedName("author") val author: String,
     @SerializedName("rank") val rank: Int,

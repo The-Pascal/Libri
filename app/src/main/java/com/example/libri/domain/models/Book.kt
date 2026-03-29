@@ -15,7 +15,9 @@ data class Book(
     val isBookmarked: Boolean = false,
     val imageLinks: BookImageLinks? = null,
     val downloadCount: Int? = null,
-    val tags: List<String>? = null
+    val tags: List<String>? = null,
+    val isbn10: String? = null,
+    val isbn13: String? = null
 )
 
 data class BookImageLinks(
