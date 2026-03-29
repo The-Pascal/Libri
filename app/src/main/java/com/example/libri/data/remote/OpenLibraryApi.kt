@@ -6,12 +6,18 @@ import com.example.libri.data.remote.dto.SearchResponse
 import com.example.libri.data.remote.dto.SubjectResponse
 import com.example.libri.data.remote.dto.TrendingResponse
 import com.example.libri.data.remote.dto.WorkDto
+import com.example.libri.data.remote.dto.openlibrary.OpenLibraryEditionDto
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface OpenLibraryApi {
+
+    @GET("isbn/{isbn}.json")
+    suspend fun getEditionByIsbn(
+        @Path("isbn") isbn: String,
+    ): Response<OpenLibraryEditionDto>
 
     @GET("search.json")
     suspend fun searchBooks(

@@ -13,6 +13,7 @@ object Network {
     private const val GOOGLE_BASE_URL = "https://www.googleapis.com/books/v1/"
     private const val NYT_BASE_URL = "https://api.nytimes.com/svc/books/v3/"
     private const val GUTENDEX_BASE_URL = "https://gutendex.com/"
+    private const val OPEN_LIBRARY_BASE_URL = "https://openlibrary.org/"
 
     private val okHttpClient = OkHttpClient.Builder().build()
 
@@ -56,6 +57,19 @@ object Network {
             .client(client)
             .build()
         retrofit.create(GutendexApi::class.java)
+    }
+
+    val openLibraryApi: OpenLibraryApi by lazy {
+        val client = okHttpClient.newBuilder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+        val retrofit = retrofitBase.newBuilder()
+            .baseUrl(OPEN_LIBRARY_BASE_URL)
+            .client(client)
+            .build()
+        retrofit.create(OpenLibraryApi::class.java)
     }
 
     class AuthInterceptor(private val apiKey: String, private val apiKeyValue: String): Interceptor {

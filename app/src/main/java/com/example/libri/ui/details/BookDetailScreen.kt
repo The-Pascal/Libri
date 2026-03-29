@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -29,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
@@ -39,6 +39,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,7 +56,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
@@ -64,7 +64,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.libri.R
 import com.example.libri.domain.models.Authors
-import com.example.libri.domain.models.Book
 import com.example.libri.domain.models.BookDetails
 import com.example.libri.domain.models.BookStats
 import com.example.libri.ui.common.BookImage
@@ -84,11 +83,14 @@ fun BookDetailScreen(
 ) {
     val basicBookDetails by viewModel.bookArgs.collectAsStateWithLifecycle()
     val secondaryBookDetails by viewModel.bookDetails.collectAsStateWithLifecycle()
+    val authorEnrichment by viewModel.authorEnrichment.collectAsStateWithLifecycle()
 
     MainContentScaffold(
         modifier = Modifier,
         basicBookDetails = basicBookDetails,
-        secondaryBookDetails = secondaryBookDetails
+        secondaryBookDetails = secondaryBookDetails,
+        authorEnrichment = authorEnrichment,
+        onAuthorsSectionVisible = { viewModel.loadAuthorBiosIfNeeded() },
     )
 }
 
@@ -97,7 +99,9 @@ fun BookDetailScreen(
 private fun MainContentScaffold(
     secondaryBookDetails: BookDetailViewModel.BookDetailsUIModel,
     basicBookDetails: BookDetailViewModel.Args,
-    modifier: Modifier = Modifier
+    authorEnrichment: BookDetailViewModel.AuthorEnrichmentUi,
+    onAuthorsSectionVisible: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val isStartedReading = false
     Scaffold(
@@ -137,7 +141,9 @@ private fun MainContentScaffold(
         MainContent(
             basicBookDetails = basicBookDetails,
             secondaryBookDetails = secondaryBookDetails,
-            modifier = Modifier.padding(innerPadding)
+            authorEnrichment = authorEnrichment,
+            onAuthorsSectionVisible = onAuthorsSectionVisible,
+            modifier = Modifier.padding(innerPadding),
         )
     }
 }
@@ -198,7 +204,9 @@ private fun ActionButtonBottomCenter(
 fun MainContent(
     basicBookDetails: BookDetailViewModel.Args,
     secondaryBookDetails: BookDetailViewModel.BookDetailsUIModel,
-    modifier: Modifier = Modifier
+    authorEnrichment: BookDetailViewModel.AuthorEnrichmentUi,
+    onAuthorsSectionVisible: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(bottom = 120.dp),
@@ -222,7 +230,14 @@ fun MainContent(
             }
             is BookDetailViewModel.BookDetailsUIModel.Loading -> {
                 item {
-                    Text("Loading...")
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
             }
             is BookDetailViewModel.BookDetailsUIModel.Success -> {
@@ -250,7 +265,11 @@ fun MainContent(
 
                 item {
                     Spacer(Modifier.height(28.dp))
-                    AuthorProfileSection(authors = bookDetails.authors)
+                    AuthorProfileSection(
+                        baseAuthors = bookDetails.authors,
+                        enrichment = authorEnrichment,
+                        onAppear = onAuthorsSectionVisible,
+                    )
                 }
             }
         }
@@ -258,10 +277,27 @@ fun MainContent(
 }
 
 @Composable
-fun AuthorProfileSection(authors: List<Authors>) {
+fun AuthorProfileSection(
+    baseAuthors: List<Authors>,
+    enrichment: BookDetailViewModel.AuthorEnrichmentUi,
+    onAppear: () -> Unit,
+) {
+    LaunchedEffect(Unit) {
+        onAppear()
+    }
+
+    if (baseAuthors.isEmpty()) return
+
+    val displayAuthors = when (enrichment) {
+        is BookDetailViewModel.AuthorEnrichmentUi.Success -> enrichment.authors
+        else -> baseAuthors
+    }
+
+    Log.d("Author", displayAuthors.toString())
+
     val itemsToShow = 3
-    val pages = authors.chunked(itemsToShow)
-    var selectedAuthorIndex by remember { mutableIntStateOf(0) }
+    val pages = displayAuthors.chunked(itemsToShow)
+    var selectedAuthorIndex by remember(displayAuthors) { mutableIntStateOf(0) }
     val pagerState = rememberPagerState(pageCount = { pages.size })
 
     Column(
@@ -269,16 +305,25 @@ fun AuthorProfileSection(authors: List<Authors>) {
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = "Authors",
                 style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
 
+            if (enrichment is BookDetailViewModel.AuthorEnrichmentUi.Loading) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .size(22.dp),
+                    strokeWidth = 2.dp,
+                )
+            }
+
             Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 repeat(pages.size) {
                     val color = if (pagerState.currentPage == it) {
@@ -290,7 +335,7 @@ fun AuthorProfileSection(authors: List<Authors>) {
                     Box(
                         modifier = Modifier
                             .size(8.dp)
-                            .background(color, CircleShape)
+                            .background(color, CircleShape),
                     )
                 }
             }
@@ -304,20 +349,20 @@ fun AuthorProfileSection(authors: List<Authors>) {
         ) { page ->
             Row(
                 horizontalArrangement = Arrangement.SpaceEvenly,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 repeat(itemsToShow) {
                     val index = page * itemsToShow + it
-                    if (index < authors.size) {
-                        val author = authors[index]
+                    if (index < displayAuthors.size) {
+                        val author = displayAuthors[index]
                         SelectableAuthorAvatar(
                             model = author.authorPhotoUrl,
                             name = author.authorName,
-                            isSelected = selectedAuthorIndex == authors.indexOf(author),
+                            isSelected = selectedAuthorIndex == displayAuthors.indexOf(author),
                             modifier = Modifier
                                 .clickable {
-                                    selectedAuthorIndex = authors.indexOf(author)
-                                }
+                                    selectedAuthorIndex = displayAuthors.indexOf(author)
+                                },
                         )
                     }
                 }
@@ -326,13 +371,13 @@ fun AuthorProfileSection(authors: List<Authors>) {
 
         Spacer(Modifier.height(16.dp))
         Text(
-            text = authors[selectedAuthorIndex].authorBio,
+            text = displayAuthors[selectedAuthorIndex].authorBio,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = LightCharcoal,
             modifier = Modifier
                 .padding(horizontal = 16.dp)
-                .fillMaxWidth()
+                .fillMaxWidth(),
         )
     }
 }
@@ -625,7 +670,6 @@ private fun BookDetailPreview() {
 
     LibriTheme {
         MainContentScaffold(
-
             secondaryBookDetails = BookDetailViewModel.BookDetailsUIModel.Success(bookDetails),
             basicBookDetails = BookDetailViewModel.Args(
                 bookId = "abc123",
@@ -634,9 +678,10 @@ private fun BookDetailPreview() {
                 authors = "F. Scott Fitzgerald",
                 bookImageUrl = "",
                 isbn13 = "123",
-                isbn10 = "123"
+                isbn10 = "123",
             ),
+            authorEnrichment = BookDetailViewModel.AuthorEnrichmentUi.Success(authors),
+            onAuthorsSectionVisible = {},
         )
     }
-
 }

@@ -1,7 +1,7 @@
 package com.example.libri.data.remote.dto
 
+import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
-import kotlinx.serialization.json.JsonElement
 
 data class AuthorDto(
     @SerializedName("name") val name: String,

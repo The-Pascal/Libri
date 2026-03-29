@@ -30,10 +30,13 @@ fun HtmlDescription(
         modifier = modifier,
         factory = { context ->
             TextView(context).apply {
-                movementMethod = LinkMovementMethod.getInstance()
                 setTextSize(TypedValue.COMPLEX_UNIT_SP, textSize.value)
                 this.maxLines = maxLines
                 ellipsize = TextUtils.TruncateAt.END
+                this.isVerticalScrollBarEnabled = false
+                this.isHorizontalScrollBarEnabled = false
+                this.isScrollContainer = false
+                this.isNestedScrollingEnabled = false
             }
         },
         update = {
@@ -41,6 +44,7 @@ fun HtmlDescription(
             it.setTextColor(color.toArgb())
             it.maxLines = maxLines
             it.ellipsize = TextUtils.TruncateAt.END
+            it.isNestedScrollingEnabled = false
             it.text = HtmlCompat.fromHtml(
                 html, HtmlCompat.FROM_HTML_MODE_COMPACT
             )

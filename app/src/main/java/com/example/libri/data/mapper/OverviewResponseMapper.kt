@@ -16,9 +16,12 @@ fun OverviewResponse.toDomain(): Map<BestSellerList, List<Book>> {
 }
 
 fun NytBook.toDomain(): Book {
+    val stableId = isbn13.filter { it.isDigit() }.takeIf { it.length == 13 }
+        ?: isbn10.filter { it.isDigit() }.takeIf { it.length == 10 }
+        ?: title
     return Book(
         apiType = ApiType.NYT,
-        id = this.title,
+        id = stableId,
         title = this.title,
         authors = listOf(this.author),
         coverUrl = this.bookImage,

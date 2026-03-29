@@ -52,7 +52,11 @@ class MainActivity : ComponentActivity() {
 
         val database = AppDatabase.getInstance(this)
         val repository = BookRepositoryImpl(
-            Network.googleBooksApi, Network.nytBooksApi, Network.gutendexApi, database
+            Network.googleBooksApi,
+            Network.nytBooksApi,
+            Network.gutendexApi,
+            Network.openLibraryApi,
+            database,
         )
 
         setContent {

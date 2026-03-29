@@ -10,6 +10,8 @@ import com.example.libri.data.mapper.toDomainBooks
 import com.example.libri.data.remote.GoogleBooksApi
 import com.example.libri.data.remote.GutendexApi
 import com.example.libri.data.remote.NytBooksApi
+import com.example.libri.data.remote.OpenLibraryApi
+import com.example.libri.domain.models.Authors
 import com.example.libri.domain.models.Book
 import com.example.libri.domain.models.BookDetails
 import com.example.libri.domain.repository.BookRepository
@@ -24,11 +26,11 @@ class BookRepositoryImpl(
     private val googleApi: GoogleBooksApi,
     private val nytBooksApi: NytBooksApi,
     private val gutendexApi: GutendexApi,
+    private val openLibraryApi: OpenLibraryApi,
     private val database: AppDatabase,
 ) : BookRepository {
-    private val resolver by lazy {
-        GoogleBooksVolumeResolver(googleApi)
-    }
+    private val volumeFetcher by lazy { GoogleBookVolumeFetcher(googleApi) }
+    private val authorEnrichment by lazy { OpenLibraryAuthorEnrichment(openLibraryApi) }
 
     override suspend fun searchBooks(query: String, sort: String?): Flow<Result<List<Book>>> {
         return flow {
@@ -81,7 +83,8 @@ class BookRepositoryImpl(
         return try {
             val response = nytBooksApi.getFullOverview()
             if (response.isSuccessful) {
-                val result = response.body()?.toDomain() ?: throw Exception("Null response received")
+                val result =
+                    response.body()?.toDomain() ?: throw Exception("Null response received")
                 Result.success(result)
             } else {
                 Result.failure(Exception("API Error"))
@@ -96,7 +99,8 @@ class BookRepositoryImpl(
         return try {
             val response = googleApi.getBooksByCategory(genre)
             if (response.isSuccessful) {
-                val result = response.body()?.toDomain() ?: throw Exception("Null response received")
+                val result =
+                    response.body()?.toDomain() ?: throw Exception("Null response received")
                 Result.success(result)
             } else {
                 Result.failure(Exception("API Error"))
@@ -111,7 +115,8 @@ class BookRepositoryImpl(
         return try {
             val response = googleApi.getBooksByAuthor(authorOlid)
             if (response.isSuccessful) {
-                val result = response.body()?.toDomain() ?: throw Exception("Null response received")
+                val result =
+                    response.body()?.toDomain() ?: throw Exception("Null response received")
                 Result.success(result)
             } else {
                 Result.failure(Exception("API Error"))
@@ -123,11 +128,21 @@ class BookRepositoryImpl(
     }
 
     override suspend fun loadBookDetailsFromGoogle(bookDetails: GetBookDetailsType): Result<BookDetails> {
-        val volumeId = resolver.resolveVolumeId(bookDetails).getOrElse { return Result.failure(it) }
-        val response = googleApi.getBookDetails(volumeId)
-        if (!response.isSuccessful) return Result.failure(IllegalStateException("Volume request failed"))
-        val body = response.body() ?: return Result.failure(IllegalStateException("Empty volume body"))
-        return Result.success(body.toBookDetails())
+        return withContext(Dispatchers.IO) {
+            val volume = volumeFetcher.fetchVolume(bookDetails)
+                .getOrElse { return@withContext Result.failure(it) }
+            Result.success(volume.toBookDetails())
+        }
+    }
+
+    override suspend fun enrichAuthorDetails(
+        bookDetails: BookDetails,
+        title: String,
+        authorsLine: String,
+    ): Result<List<Authors>> {
+        return withContext(Dispatchers.IO) {
+            authorEnrichment.enrich(bookDetails, title, authorsLine)
+        }
     }
 
     sealed class GetBookDetailsType {

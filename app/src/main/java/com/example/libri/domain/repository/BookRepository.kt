@@ -1,8 +1,7 @@
 package com.example.libri.domain.repository
 
-import com.example.libri.data.remote.GoogleBooksApi
 import com.example.libri.data.repository.BookRepositoryImpl
-import com.example.libri.data.repository.GoogleBooksVolumeResolver
+import com.example.libri.domain.models.Authors
 import com.example.libri.domain.models.Book
 import com.example.libri.domain.models.BookDetails
 import com.example.libri.utils.BestSellerList
@@ -24,4 +23,10 @@ interface BookRepository {
     suspend fun getFreeTreasures(): Result<List<Book>>
 
     suspend fun loadBookDetailsFromGoogle(bookDetails: BookRepositoryImpl.GetBookDetailsType): Result<BookDetails>
+
+    suspend fun enrichAuthorDetails(
+        bookDetails: BookDetails,
+        title: String,
+        authorsLine: String,
+    ): Result<List<Authors>>
 }
