@@ -26,6 +26,10 @@ fun Int.toReadableCount(): String {
     }
 }
 
+fun Modifier.thenIf(condition: Boolean, modifier: Modifier): Modifier {
+    return if (condition) this.then(modifier) else this
+}
+
 fun Modifier.drawTextFade(): Modifier = this
     .graphicsLayer(compositingStrategy = CompositingStrategy.Offscreen)
     .drawWithContent {

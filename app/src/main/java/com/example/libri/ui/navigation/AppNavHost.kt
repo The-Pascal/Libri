@@ -48,7 +48,9 @@ fun AppNavHost(
                             apiType = it.apiType.name,
                             bookName = it.title,
                             authors = it.authors.joinToString(),
-                            bookImageUrl = it.imageLinks?.large ?: ""
+                            bookImageUrl = it.imageLinks?.large ?: "",
+                            isbn13 = it.isbn13 ?: "",
+                            isbn10 = it.isbn10 ?: ""
                         )
                     )
                 },
@@ -85,11 +87,15 @@ fun AppNavHost(
                 apiType = ApiType.valueOf(route.apiType),
                 bookName = route.bookName,
                 authors = route.authors,
-                bookImageUrl = route.bookImageUrl
+                bookImageUrl = route.bookImageUrl,
+                isbn13 = route.isbn13,
+                isbn10 = route.isbn10
             )
 
             val viewModel: BookDetailViewModel = viewModel(
-                factory = BaseViewModelFactory { BookDetailViewModel(args = args) }
+                factory = BaseViewModelFactory {
+                    BookDetailViewModel(args = args, repository = repository)
+                }
             )
             BookDetailScreen(
                 viewModel = viewModel,

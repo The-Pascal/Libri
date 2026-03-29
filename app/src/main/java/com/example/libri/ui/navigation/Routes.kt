@@ -23,6 +23,8 @@ sealed class Routes {
         val apiType: String,
         val bookName: String,
         val bookImageUrl: String,
-        val authors: String
+        val authors: String,
+        val isbn13: String,
+        val isbn10: String
     ): Routes()
 }

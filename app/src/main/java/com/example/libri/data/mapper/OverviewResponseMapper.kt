@@ -26,6 +26,8 @@ fun NytBook.toDomain(): Book {
         averageRating = null,
         ratingsCount = null,
         isBookmarked = false,
+        isbn13 = this.isbn13,
+        isbn10 = this.isbn10,
         imageLinks = BookImageLinks(
             small = this.bookImage,
             medium = this.bookImage,

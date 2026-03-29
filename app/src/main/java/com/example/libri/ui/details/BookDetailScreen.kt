@@ -28,9 +28,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,6 +41,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -54,18 +57,24 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.libri.R
+import com.example.libri.domain.models.Authors
 import com.example.libri.domain.models.Book
-import com.example.libri.domain.models.BookImageLinks
+import com.example.libri.domain.models.BookDetails
+import com.example.libri.domain.models.BookStats
 import com.example.libri.ui.common.BookImage
+import com.example.libri.ui.common.HtmlDescription
 import com.example.libri.ui.common.author.SelectableAuthorAvatar
 import com.example.libri.ui.theme.LibriTheme
 import com.example.libri.ui.theme.LightCharcoal
 import com.example.libri.utils.ApiType
 import com.example.libri.utils.drawTextFade
+import com.example.libri.utils.thenIf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,35 +82,22 @@ fun BookDetailScreen(
     viewModel: BookDetailViewModel,
     modifier: Modifier = Modifier
 ) {
-//    val book = remember { viewModel.book }
     val basicBookDetails by viewModel.bookArgs.collectAsStateWithLifecycle()
+    val secondaryBookDetails by viewModel.bookDetails.collectAsStateWithLifecycle()
 
     MainContentScaffold(
         modifier = Modifier,
         basicBookDetails = basicBookDetails,
-        book = Book(
-            id = "abc123",
-            title = "The Great Gatsby",
-            authors = listOf("F. Scott Fitzgerald"),
-            publishYear = "1925",
-            coverUrl = "",
-            isBookmarked = false,
-            tags = listOf("Philosophy", "Architecture", "Mindfulness"),
-            imageLinks = BookImageLinks(
-                small = "https://www.google.com",
-                medium = "https://www.google.com",
-                large = "https://covers.openlibrary.org/b/id/15121528-L.jpg"
-            )
-        )
+        secondaryBookDetails = secondaryBookDetails
     )
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun MainContentScaffold(
-    book: Book,
-    modifier: Modifier = Modifier,
-    basicBookDetails: BookDetailViewModel.Args
+    secondaryBookDetails: BookDetailViewModel.BookDetailsUIModel,
+    basicBookDetails: BookDetailViewModel.Args,
+    modifier: Modifier = Modifier
 ) {
     val isStartedReading = false
     Scaffold(
@@ -139,8 +135,8 @@ private fun MainContentScaffold(
         }
     ) { innerPadding ->
         MainContent(
-            book = book,
             basicBookDetails = basicBookDetails,
+            secondaryBookDetails = secondaryBookDetails,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -200,9 +196,9 @@ private fun ActionButtonBottomCenter(
 
 @Composable
 fun MainContent(
-    book: Book,
-    modifier: Modifier = Modifier,
-    basicBookDetails: BookDetailViewModel.Args
+    basicBookDetails: BookDetailViewModel.Args,
+    secondaryBookDetails: BookDetailViewModel.BookDetailsUIModel,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(
         contentPadding = PaddingValues(bottom = 120.dp),
@@ -218,70 +214,51 @@ fun MainContent(
             )
         }
 
-        book.tags?.let {
-            item {
-                TagSection(
-                    it, Modifier
-                        .offset(y = (-2).dp)
-                        .background(MaterialTheme.colorScheme.surface)
-                        .fillMaxWidth()
-                )
+        when (secondaryBookDetails) {
+            is BookDetailViewModel.BookDetailsUIModel.Error -> {
+                item {
+                    Text("Error")
+                }
             }
-        }
+            is BookDetailViewModel.BookDetailsUIModel.Loading -> {
+                item {
+                    Text("Loading...")
+                }
+            }
+            is BookDetailViewModel.BookDetailsUIModel.Success -> {
+                val bookDetails = secondaryBookDetails.bookDetails
+                bookDetails.tags?.let {
+                    item {
+                        TagSection(
+                            it, Modifier
+                                .offset(y = (-2).dp)
+                                .background(MaterialTheme.colorScheme.surface)
+                                .fillMaxWidth()
+                        )
+                    }
+                }
 
-        item {
-            Spacer(Modifier.height(28.dp))
-            BookStatsSection()
-        }
+                item {
+                    Spacer(Modifier.height(28.dp))
+                    BookStatsSection(stats = bookDetails.stats)
+                }
 
-        item {
-            Spacer(Modifier.height(28.dp))
-            AboutBookSection()
-        }
+                item {
+                    Spacer(Modifier.height(28.dp))
+                    AboutBookSection(description = bookDetails.description)
+                }
 
-        item {
-            Spacer(Modifier.height(28.dp))
-            AuthorProfileSection()
+                item {
+                    Spacer(Modifier.height(28.dp))
+                    AuthorProfileSection(authors = bookDetails.authors)
+                }
+            }
         }
     }
 }
 
 @Composable
-fun AuthorProfileSection() {
-    data class Author(
-        val name: String,
-        val imageUrl: String,
-        val description: String
-    )
-
-    val authors = listOf(
-        Author(
-            name = "Elena Vance",
-            imageUrl = "https://covers.openlibrary.org/a/olid/OL23919A-L.jpg?default=false",
-            description = "This is a description of Elena Vance. This is just a demo description, for testing purposes. This is gonna be a little long description."
-        ),
-        Author(
-            name = "Sarah Jean",
-            imageUrl = "https://covers.openlibrary.org/a/olid/OL23919A-L.jpg?default=false",
-            description = "This is a description of Elena Vance"
-        ),
-        Author(
-            name = "Marcus Thorne",
-            imageUrl = "https://covers.openlibrary.org/a/olid/OL23919A-L.jpg?default=false",
-            description = "This is a description of Elena Vance"
-        ),
-        Author(
-            name = "Kiara Advani",
-            imageUrl = "https://covers.openlibrary.org/a/olid/OL23919A-L.jpg?default=false",
-            description = "This is a description of Elena Vance"
-        ),
-        Author(
-            name = "Disha Patani",
-            imageUrl = "https://covers.openlibrary.org/a/olid/OL23919A-L.jpg?default=false",
-            description = "This is a description of Elena Vance"
-        )
-    )
-
+fun AuthorProfileSection(authors: List<Authors>) {
     val itemsToShow = 3
     val pages = authors.chunked(itemsToShow)
     var selectedAuthorIndex by remember { mutableIntStateOf(0) }
@@ -333,10 +310,9 @@ fun AuthorProfileSection() {
                     val index = page * itemsToShow + it
                     if (index < authors.size) {
                         val author = authors[index]
-                        Log.d("TestPager", "${author.name} - $page - $it")
                         SelectableAuthorAvatar(
-                            model = author.imageUrl,
-                            name = author.name,
+                            model = author.authorPhotoUrl,
+                            name = author.authorName,
                             isSelected = selectedAuthorIndex == authors.indexOf(author),
                             modifier = Modifier
                                 .clickable {
@@ -350,7 +326,7 @@ fun AuthorProfileSection() {
 
         Spacer(Modifier.height(16.dp))
         Text(
-            text = authors[selectedAuthorIndex].description,
+            text = authors[selectedAuthorIndex].authorBio,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
             color = LightCharcoal,
@@ -362,12 +338,15 @@ fun AuthorProfileSection() {
 }
 
 @Composable
-fun BookStatsSection(modifier: Modifier = Modifier) {
+fun BookStatsSection(
+    stats: BookStats,
+    modifier: Modifier = Modifier
+) {
     val bookStats = listOf(
-        "Pages" to "324",
-        "Language" to "English",
-        "ISBN" to "1234567890",
-        "Published" to "Oct 2023"
+        "Pages" to stats.pages,
+        "Language" to stats.languages,
+        "ISBN" to stats.isbn,
+        "Published" to stats.publishedDate
     )
     val chunks = bookStats.chunked(2)
     Column(
@@ -422,7 +401,12 @@ fun StatsTag(
 }
 
 @Composable
-private fun AboutBookSection() {
+private fun AboutBookSection(
+    description: String,
+    isTextCollapsedInitial: Boolean = true
+) {
+    var isTextCollapsed by remember { mutableStateOf(isTextCollapsedInitial) }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -435,47 +419,59 @@ private fun AboutBookSection() {
                 style = MaterialTheme.typography.headlineMedium,
                 modifier = Modifier.weight(1f)
             )
-            Icon(
-                painter = painterResource(R.drawable.outline_expand_icon),
-                contentDescription = "Expand button",
-                tint = MaterialTheme.colorScheme.secondary
-            )
+            IconButton(
+                onClick = { isTextCollapsed = !isTextCollapsed }
+            ) {
+                val iconRes = if (isTextCollapsed) {
+                    R.drawable.outline_expand_all_24
+                } else {
+                    R.drawable.outline_collapse_all_24
+                }
+                Icon(
+                    painter = painterResource(iconRes),
+                    contentDescription = "Expand button",
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+            }
         }
+
         Box(
             contentAlignment = Alignment.BottomCenter,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(max = 100.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "A few paragraphs of truncated text showing the description of the book few paragraphs of truncated text showing the description of the book few paragraphs of truncated text showing the description of the book of the book few paragraphs of truncated text showing the description of the book here now. This is okay to be placed here, as this ia long text for howing the description of the book here now.",
-                style = MaterialTheme.typography.bodyMedium,
+            val maxLines = if (isTextCollapsed) 6 else Int.MAX_VALUE
+            HtmlDescription(
+                html = description,
+                maxLines = maxLines,
+                color = LightCharcoal,
+                textSize = TextUnit(14f, TextUnitType.Sp),
                 modifier = Modifier
                     .padding(top = 12.dp)
-                    .drawTextFade(),
-                maxLines = 6,
-                overflow = TextOverflow.Clip,
-                color = LightCharcoal
+                    .thenIf(isTextCollapsed, Modifier.drawTextFade())
             )
         }
+
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
+                .clickable { isTextCollapsed = !isTextCollapsed }
                 .padding(vertical = 16.dp)
         ) {
+            val text = if (isTextCollapsed) "Read full Synopsis " else "Hide full Synopsis "
+            val icon = if (isTextCollapsed) Icons.Default.KeyboardArrowDown else Icons.Default.KeyboardArrowUp
             Text(
-                text = "Read full Synopsis ".uppercase(),
+                text = text.uppercase(),
                 style = MaterialTheme.typography.labelMedium,
                 letterSpacing = 1.5.sp,
                 color = MaterialTheme.colorScheme.secondary
             )
             Icon(
-                imageVector = Icons.Default.KeyboardArrowDown,
+                imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.secondary
+                tint = MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.size(16.dp)
             )
         }
     }
@@ -587,24 +583,59 @@ private fun TopBookContent(
 @Preview(heightDp = 1400)
 @Composable
 private fun BookDetailPreview() {
+    val authors = listOf(
+        Authors(
+            authorName = "Elena Vance",
+            authorPhotoUrl = "https://covers.openlibrary.org/a/olid/OL23919A-L.jpg?default=false",
+            authorBio = "This is a description of Elena Vance. This is just a demo description, for testing purposes. This is gonna be a little long description."
+        ),
+        Authors(
+            authorName = "Sarah Jean",
+            authorPhotoUrl = "https://covers.openlibrary.org/a/olid/OL23919A-L.jpg?default=false",
+            authorBio = "This is a description of Elena Vance"
+        ),
+        Authors(
+            authorName = "Marcus Thorne",
+            authorPhotoUrl = "https://covers.openlibrary.org/a/olid/OL23919A-L.jpg?default=false",
+            authorBio = "This is a description of Elena Vance"
+        ),
+        Authors(
+            authorName = "Kiara Advani",
+            authorPhotoUrl = "https://covers.openlibrary.org/a/olid/OL23919A-L.jpg?default=false",
+            authorBio = "This is a description of Elena Vance"
+        ),
+        Authors(
+            authorName = "Disha Patani",
+            authorPhotoUrl = "https://covers.openlibrary.org/a/olid/OL23919A-L.jpg?default=false",
+            authorBio = "This is a description of Elena Vance"
+        )
+    )
+
+    val bookDetails = BookDetails(
+        authors = authors,
+        tags = listOf("Philosophy", "Architecture", "Mindfulness"),
+        stats = BookStats(
+            pages = "200",
+            languages = "English",
+            isbn = "1234567890",
+            publishedDate = "2023"
+        ),
+        description = "This is a description of the book. This is just a demo description, for testing purposes. I am making the description a little longer for testing how it looks."
+    )
+
     LibriTheme {
         MainContentScaffold(
-            Book(
-                id = "abc123",
-                title = "The Great Gatsby",
-                authors = listOf("F. Scott Fitzgerald"),
-                publishYear = "1925",
-                coverUrl = "",
-                isBookmarked = false,
-                tags = listOf("Philosophy", "Architecture", "Mindfulness")
-            ),
+
+            secondaryBookDetails = BookDetailViewModel.BookDetailsUIModel.Success(bookDetails),
             basicBookDetails = BookDetailViewModel.Args(
                 bookId = "abc123",
-    	        apiType = ApiType.UNKNOWN,
+                apiType = ApiType.UNKNOWN,
                 bookName = "The Great Gatsby",
                 authors = "F. Scott Fitzgerald",
-                bookImageUrl = ""
-            )
+                bookImageUrl = "",
+                isbn13 = "123",
+                isbn10 = "123"
+            ),
         )
     }
 

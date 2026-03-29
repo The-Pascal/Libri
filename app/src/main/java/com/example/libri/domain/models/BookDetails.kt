@@ -2,7 +2,7 @@ package com.example.libri.domain.models
 
 data class BookDetails(
     val authors: List<Authors>,
-    val subjects: List<String>?,
+    val tags: List<String>?,
     val stats: BookStats,
     val description: String,
 )
