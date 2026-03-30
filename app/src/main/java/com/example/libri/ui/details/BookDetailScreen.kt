@@ -69,6 +69,7 @@ import com.example.libri.domain.models.BookStats
 import com.example.libri.ui.common.BookImage
 import com.example.libri.ui.common.HtmlDescription
 import com.example.libri.ui.common.author.SelectableAuthorAvatar
+import com.example.libri.ui.common.dialogs.UpdateBookProgressBottomSheet
 import com.example.libri.ui.theme.LibriTheme
 import com.example.libri.ui.theme.LightCharcoal
 import com.example.libri.utils.ApiType
@@ -104,9 +105,10 @@ private fun MainContentScaffold(
     modifier: Modifier = Modifier,
 ) {
     val isStartedReading = false
+    var showUpdateBookProgressSheet by remember { mutableStateOf(false) }
+
     Scaffold(
-        modifier = modifier
-            .fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
                 title = {},
@@ -133,7 +135,7 @@ private fun MainContentScaffold(
                 ) {
                     ActionButtonBottomCenter(
                         isStartedReading = isStartedReading,
-                        onClick = {},
+                        onClick = { showUpdateBookProgressSheet = true },
                     )
                 }
         }
@@ -145,6 +147,18 @@ private fun MainContentScaffold(
             onAuthorsSectionVisible = onAuthorsSectionVisible,
             modifier = Modifier.padding(innerPadding),
         )
+
+        if (showUpdateBookProgressSheet) {
+            UpdateBookProgressBottomSheet(
+                bookName = basicBookDetails.bookName,
+                bookImageUrl = basicBookDetails.bookImageUrl,
+                currentPage = 123,
+                totalBookPages = 526,
+                isBookCompleted = false,
+                onDismissRequest = { showUpdateBookProgressSheet = false },
+                modifier = Modifier
+            )
+        }
     }
 }
 
@@ -152,7 +166,7 @@ private fun MainContentScaffold(
 private fun ActionButtonBottomCenter(
     isStartedReading: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val background = if (isStartedReading) {
         MaterialTheme.colorScheme.secondaryContainer
